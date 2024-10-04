@@ -9,7 +9,8 @@
 		"lint": "deno lint"
 	},
 	"compilerOptions": {
-		"jsx": "react-jsx"
+		"jsx": "react-jsx",
+		"lib": ["dom", "dom.iterable", "es2023", "esnext.iterator"]
 	},
 	"fmt": {
 		"semiColons": false,
