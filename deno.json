@@ -1,0 +1,27 @@
+{
+	"tasks": {
+		"dev": "deno task dev:ui & deno task dev:vite",
+		"dev:vite": "deno run --allow-all --unstable npm:vite",
+		"dev:ui": "deno run --allow-all --unstable-ffi main.dev.ts",
+		"build": "deno run --allow-all --unstable npm:vite build",
+		"preview": "deno run --allow-all --unstable npm:vite preview",
+		"start": "deno run --allow-all --unstable-ffi main.ts",
+		"lint": "deno lint",
+		"compile": "deno task build && deno compile -A --unstable --output bin/kurisu.exe --frozen main.ts"
+	},
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"lib": [
+			"esnext",
+			"dom",
+			"dom.iterable",
+			"deno.window"
+		]
+	},
+	"fmt": {
+		"semiColons": false,
+		"useTabs": true,
+		"exclude": [".vite", "dist"]
+	},
+	"nodeModulesDir": "auto"
+}
