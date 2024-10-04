@@ -1,22 +1,15 @@
 {
 	"tasks": {
-		"dev": "deno task dev:ui & deno task dev:vite",
-		"dev:vite": "deno run --allow-all --unstable npm:vite",
-		"dev:ui": "deno run --allow-all --unstable-ffi main.dev.ts",
-		"build": "deno run --allow-all --unstable npm:vite build",
-		"preview": "deno run --allow-all --unstable npm:vite preview",
-		"start": "deno run --allow-all --unstable-ffi main.ts",
-		"lint": "deno lint",
-		"compile": "deno task build && deno compile -A --unstable --output bin/kurisu.exe --frozen main.ts"
+		"tauri": "deno run -A npm:@tauri-apps/cli",
+		"dev": "deno run -A npm:@tauri-apps/cli dev",
+		"dev:vite": "deno run -A npm:vite",
+		"build": "deno run -A npm:@tauri-apps/cli build",
+		"build:vite": "deno run -A npm:vite build",
+		"preview": "deno run -A npm:vite preview",
+		"lint": "deno lint"
 	},
 	"compilerOptions": {
-		"jsx": "react-jsx",
-		"lib": [
-			"esnext",
-			"dom",
-			"dom.iterable",
-			"deno.window"
-		]
+		"jsx": "react-jsx"
 	},
 	"fmt": {
 		"semiColons": false,
