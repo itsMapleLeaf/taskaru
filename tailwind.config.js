@@ -1,5 +1,5 @@
 // @ts-check
-import defaultTheme from "tailwindcss/defaultTheme"
+import defaultTheme from "tailwindcss/defaultTheme.js"
 import { lerp, lerpInverse, range } from "./lib/common.ts"
 
 /** @satisfies {import('tailwindcss').Config} */
