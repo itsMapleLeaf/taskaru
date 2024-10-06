@@ -1,31 +1,9 @@
-import { invoke } from "@tauri-apps/api/core"
 import { exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { z } from "zod"
 import { jsonSchema } from "../lib/json.ts"
+import { type Task, taskSchema } from "./task.ts"
 
-export type Task = z.output<typeof taskSchema>
-const taskSchema = z.object({
-	id: z.string(),
-	text: z.string(),
-	tags: z.array(z.string()).readonly(),
-	complete: z.boolean(),
-})
-
-export function createTask(text: string, tags?: readonly string[]): Task {
-	return {
-		id: crypto.randomUUID(),
-		text,
-		tags: tags ?? [],
-		complete: false,
-	}
-}
-
-export type TaskDb = {
-	readonly tasks: readonly Task[]
-	readonly file: string
-}
-
-const defaultTasks: readonly Task[] = [
+export const DEFAULT_TASKS: readonly Task[] = [
 	{
 		id: crypto.randomUUID(),
 		text: "be nerd in school",
@@ -88,55 +66,52 @@ const defaultTasks: readonly Task[] = [
 	},
 ]
 
+type SerializedTaskDb = z.input<typeof serializedTaskDbSchema>
 const serializedTaskDbSchema = z.object({
 	tasks: z.array(taskSchema).readonly(),
 }).catch({
-	tasks: defaultTasks,
+	tasks: DEFAULT_TASKS,
 })
 
-export function createTaskDb(tasks: readonly Task[], file: string): TaskDb {
-	return { tasks, file }
-}
+export class TaskDb {
+	constructor(
+		readonly tasks: readonly Task[],
+		readonly file: string,
+	) {}
 
-export function setTasks(db: TaskDb, tasks: readonly Task[]): TaskDb {
-	return { ...db, tasks }
-}
-
-export async function loadTaskDb(file: string): Promise<TaskDb> {
-	let db
-	if (await exists(file)) {
-		const content = await readTextFile(file)
-		const loaded = jsonSchema.pipe(serializedTaskDbSchema).safeParse(content)
-		if (loaded.success) {
-			db = createTaskDb(loaded.data.tasks, file)
-		} else {
-			console.warn("failed to load task db:", loaded.error)
-			db = createTaskDb(defaultTasks, file)
+	static async fromFile(file: string) {
+		if (!await exists(file)) {
+			throw new Error(`TaskDb file not found: ${file}`)
 		}
-	} else {
-		db = createTaskDb(defaultTasks, file)
-		await saveTaskDb(db)
+
+		const content = await readTextFile(file)
+		const loaded = jsonSchema.pipe(serializedTaskDbSchema).parse(content)
+		return new TaskDb(loaded.tasks, file)
 	}
-	localStorage.setItem("lastFilePath", db.file)
 
-	// we need to add the path to the app's fs scope
-	// so that it gets persisted by the persisted-scope plugin
-	// and we can use it on app restart
-	await invoke("add_path_to_fs_scope", { path: file })
+	async save() {
+		const data: SerializedTaskDb = { tasks: this.tasks }
+		await writeTextFile(
+			this.file,
+			JSON.stringify(data, null, "\t"),
+		)
+	}
 
-	return db
-}
+	withTasks(tasks: readonly Task[]) {
+		return new TaskDb(tasks, this.file)
+	}
 
-export async function saveTaskDb(db: TaskDb) {
-	await writeTextFile(
-		db.file,
-		JSON.stringify({ tasks: db.tasks }, null, "\t"),
-	)
-}
+	withNewTask(task: Task) {
+		return this.withTasks([task, ...this.tasks])
+	}
 
-export async function loadRecentTaskDb() {
-	const file = localStorage.getItem("lastFilePath")
-	if (!file) return null
+	withoutTask(id: string) {
+		return this.withTasks(this.tasks.filter((t) => t.id !== id))
+	}
 
-	return await loadTaskDb(file)
+	withUpdatedTask(id: string, next: (current: Task) => Task) {
+		return this.withTasks(
+			this.tasks.map((it) => (it.id === id ? next(it) : it)),
+		)
+	}
 }

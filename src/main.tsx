@@ -2,6 +2,7 @@ import { LucideLoader2 } from "lucide-react"
 import { StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App.tsx"
+import { StoreProvider } from "./store.tsx"
 
 createRoot(document.getElementById("root") as HTMLElement).render(
 	<Suspense
@@ -12,7 +13,9 @@ createRoot(document.getElementById("root") as HTMLElement).render(
 		}
 	>
 		<StrictMode>
-			<App />
+			<StoreProvider>
+				<App />
+			</StoreProvider>
 		</StrictMode>
 	</Suspense>,
 )

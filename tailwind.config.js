@@ -26,9 +26,10 @@ function oklchPalette() {
   const step = 100
   return Object.fromEntries(
     range(start, end, step).map((value) => {
-      const t = lerpInverse(value, start, end)
-      const l = lerp(95, 14, t)
-      return [value, `oklch(${l}% 15% 290)`]
+      const progress = lerpInverse(value, start, end)
+      const lightness = lerp(95, 18, progress ** 0.7)
+      const chroma = lerp(15, 12, progress)
+      return [value, `oklch(${lightness}% ${chroma}% 290 / <alpha-value>)`]
     }),
   )
 }

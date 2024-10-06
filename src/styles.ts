@@ -1,4 +1,4 @@
-import { ClassNameValue, twMerge } from "https://esm.sh/tailwind-merge@1.14.0"
+import { ClassNameValue, twMerge } from "tailwind-merge"
 
 export const card = (...classes: ClassNameValue[]) =>
 	twMerge(
