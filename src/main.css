@@ -20,3 +20,18 @@
 ::-webkit-scrollbar-thumb:active {
 	background-color: theme("colors.primary.500");
 }
+
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: 2px solid theme("colors.primary.600");
+	outline-offset: 2px;
+}
+
+button,
+[role="button"],
+[role="menuitem"] {
+	cursor: default;
+}

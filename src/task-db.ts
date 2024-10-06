@@ -11,6 +11,15 @@ const taskSchema = z.object({
 	complete: z.boolean(),
 })
 
+export function createTask(text: string, tags?: readonly string[]): Task {
+	return {
+		id: crypto.randomUUID(),
+		text,
+		tags: tags ?? [],
+		complete: false,
+	}
+}
+
 export type TaskDb = {
 	readonly tasks: readonly Task[]
 	readonly file: string
