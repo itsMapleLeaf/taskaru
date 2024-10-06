@@ -49,7 +49,7 @@ export function App() {
 
 	return taskDb
 		? (
-			<TaskEditor
+			<TaskListEditor
 				tasks={taskDb.tasks}
 				setTasks={(tasks) => {
 					startTransition(() => {
@@ -77,7 +77,7 @@ export function App() {
 		)
 }
 
-function TaskEditor({
+function TaskListEditor({
 	tasks,
 	setTasks,
 }: {
