@@ -2,7 +2,7 @@ import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { z } from "zod"
 import { jsonSchema } from "../lib/json.ts"
 
-export type Task = z.infer<typeof taskSchema>
+export interface Task extends z.infer<typeof taskSchema> {}
 export const taskSchema = z.object({
 	id: z.string(),
 	text: z.string(),
@@ -10,11 +10,12 @@ export const taskSchema = z.object({
 	complete: z.boolean(),
 })
 
-const taskDatabaseJsonSchema = jsonSchema.pipe(
+export interface TaskFileJson extends z.output<typeof taskFileJsonSchema> {}
+export const taskFileJsonSchema = jsonSchema.pipe(
 	z.object({
 		tasks: taskSchema.array(),
 	}),
-)
+).catch(() => ({ tasks: defaultTasks }))
 
 export const defaultTasks: Task[] = [
 	{
@@ -81,11 +82,12 @@ export const defaultTasks: Task[] = [
 
 export async function loadTasks(filePath: string) {
 	const content = await readTextFile(filePath)
-	return taskDatabaseJsonSchema
+	const data = taskFileJsonSchema
 		.catch(() => ({ tasks: defaultTasks }))
 		.parse(content)
+	return data.tasks
 }
 
-export function saveTasks(tasks: Task[], filePath: string) {
-	writeTextFile(filePath, JSON.stringify({ tasks }))
+export function saveTasks(filePath: string, tasks: Task[]) {
+	return writeTextFile(filePath, JSON.stringify({ tasks }, null, "\t"))
 }
