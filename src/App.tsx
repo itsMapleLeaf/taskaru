@@ -1,144 +1,90 @@
-import {
-	queryOptions,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query"
 import { save } from "@tauri-apps/plugin-dialog"
-import { exists, readTextFile } from "@tauri-apps/plugin-fs"
 import { Check } from "lucide-react"
-import { useState } from "react"
+import { startTransition, use, useActionState, useState } from "react"
 import {
-	defaultTasks,
-	loadTasks,
-	saveTasks,
+	loadRecentTaskDb,
+	loadTaskDb,
+	saveTaskDb,
+	setTasks,
 	type Task,
-	taskFileJsonSchema,
-} from "./task.ts"
+	type TaskDb,
+} from "./task-db.ts"
 
-async function getInitialAppState(): Promise<{
-	tasks: Task[]
-	filePath: string | null
-}> {
-	const lastFilePath = localStorage.getItem("lastFilePath")
-	if (!lastFilePath) {
-		return {
-			tasks: [],
-			filePath: null,
-		}
-	}
-
-	if (!await exists(lastFilePath)) {
-		return {
-			tasks: [],
-			filePath: null,
-		}
-	}
-
-	const content = await readTextFile(lastFilePath)
-	const data = taskFileJsonSchema.parse(content)
-	return {
-		tasks: data.tasks,
-		filePath: lastFilePath,
-	}
-}
-
-const stateQueryOptions = queryOptions({
-	queryKey: ["tasks"],
-	queryFn: () => getInitialAppState(),
-})
+let recentTaskDbPromise: Promise<TaskDb | null>
 
 export function App() {
-	const queryClient = useQueryClient()
+	const initialTaskDb = use(
+		recentTaskDbPromise ??= loadRecentTaskDb().catch((error) => {
+			console.warn("failed to load recent task db:", error)
+			return null
+		}),
+	)
 
-	const state = useQuery(stateQueryOptions)
-
-	const updateTasksMutation = useMutation({
-		mutationFn: async (input: { tasks: Task[]; filePath: string }) => {
-			await saveTasks(input.filePath, input.tasks)
-		},
-		onMutate: (input) => {
-			queryClient.setQueryData(
-				stateQueryOptions.queryKey,
-				() => input,
-			)
-		},
-	})
-
-	const saveInitialTasksMutation = useMutation({
-		mutationFn: async () => {
-			const filePath = await save({
-				defaultPath: "tasks.json",
-				filters: [
-					{ name: "JSON", extensions: ["json"] },
-				],
-			})
-			if (!filePath) return
-
-			let tasks = defaultTasks
-
-			if (!await exists(filePath)) {
-				await saveTasks(filePath, tasks)
-			} else {
-				tasks = await loadTasks(filePath)
+	const [taskDb, dispatch, pending] = useActionState(
+		async (
+			current: TaskDb | null,
+			action:
+				| { type: "setupDb" }
+				| { type: "setTasks"; tasks: readonly Task[] },
+		) => {
+			if (action.type === "setupDb") {
+				const file = await save({
+					defaultPath: "tasks.json",
+					filters: [
+						{ name: "JSON", extensions: ["json"] },
+					],
+				})
+				if (!file) return null
+				return await loadTaskDb(file)
 			}
-
-			localStorage.setItem("lastFilePath", filePath)
-			return { tasks, filePath }
+			if (action.type === "setTasks") {
+				const db = setTasks(current!, action.tasks)
+				await saveTaskDb(db)
+				return db
+			}
+			return current
 		},
-		onSuccess: (result) => {
-			if (!result) return
-			queryClient.setQueryData(
-				stateQueryOptions.queryKey,
-				() => result,
-			)
-		},
-	})
+		initialTaskDb,
+	)
 
-	if (state.isError) {
-		return <p>Error: {state.error.message}</p>
-	}
-
-	if (state.isSuccess) {
-		const { tasks, filePath } = state.data
-		return filePath
-			? (
-				<TaskEditor
-					tasks={tasks}
-					setTasks={(tasks) => {
-						updateTasksMutation.mutate({
-							tasks,
-							filePath,
+	return taskDb
+		? (
+			<TaskEditor
+				tasks={taskDb.tasks}
+				setTasks={(tasks) => {
+					startTransition(() => {
+						dispatch({ type: "setTasks", tasks })
+					})
+				}}
+			/>
+		)
+		: (
+			<main className="absolute inset-0 flex flex-col items-center gap-4">
+				<p>Choose a location to save your tasks.</p>
+				<button
+					type="button"
+					className="bg-primary-800 focus:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg h-14 px-4 text-xl disabled:opacity-50"
+					disabled={pending}
+					onClick={() => {
+						startTransition(() => {
+							dispatch({
+								type: "setupDb",
+							})
 						})
 					}}
-				/>
-			)
-			: (
-				<main className="absolute inset-0 flex flex-col items-center gap-4">
-					<p>Choose a location to save your tasks.</p>
-					<button
-						type="button"
-						className="bg-primary-800 focus:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg h-14 px-4 text-xl disabled:opacity-50"
-						disabled={saveInitialTasksMutation.isPending}
-						onClick={() => {
-							saveInitialTasksMutation.mutate()
-						}}
-					>
-						Choose location
-					</button>
-				</main>
-			)
-	}
-
-	return <p>Loading...</p>
+				>
+					Choose location
+				</button>
+			</main>
+		)
 }
 
 function TaskEditor({
 	tasks,
 	setTasks,
 }: {
-	tasks: Task[]
-	setTasks: (tasks: Task[]) => void
+	tasks: readonly Task[]
+	setTasks: (tasks: readonly Task[]) => void
 }) {
 	const [tagFilter, setTagFilter] = useState(new Set<string>())
 
