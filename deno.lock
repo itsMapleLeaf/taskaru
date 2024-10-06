@@ -2,21 +2,25 @@
   "version": "4",
   "specifiers": {
     "npm:@fontsource-variable/rubik@^5.1.0": "5.1.0",
+    "npm:@tanstack/react-query@^5.59.0": "5.59.0_react@18.3.1",
+    "npm:@tauri-apps/api@2": "2.0.1",
+    "npm:@tauri-apps/api@^2.0.1": "2.0.1",
     "npm:@tauri-apps/cli@*": "2.0.1",
     "npm:@tauri-apps/plugin-dialog@2": "2.0.0",
     "npm:@tauri-apps/plugin-fs@2": "2.0.0",
     "npm:@total-typescript/ts-reset@*": "0.6.1",
     "npm:@types/node@*": "22.5.4",
-    "npm:@types/react-dom@^18.3.0": "18.3.0",
     "npm:@types/react@^18.3.11": "18.3.11",
     "npm:@vitejs/plugin-react@^4.3.1": "4.3.2_vite@5.4.8_@babel+core@7.25.7",
     "npm:autoprefixer@^10.4.20": "10.4.20_postcss@8.4.47",
-    "npm:lucide-react@0.447": "0.447.0_react@18.3.1",
-    "npm:react-dom@*": "18.3.1_react@18.3.1",
-    "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
-    "npm:react@*": "18.3.1",
-    "npm:react@^18.3.1": "18.3.1",
+    "npm:lucide-react@0.447": "0.447.0_react@19.0.0-rc-fb9a90fa48-20240614",
+    "npm:react-dom@^19.0.0-rc-1460d67c-20241003": "19.0.0-rc-fb9a90fa48-20240614_react@19.0.0-rc-fb9a90fa48-20240614",
+    "npm:react@^19.0.0-rc-1460d67c-20241003": "19.0.0-rc-fb9a90fa48-20240614",
     "npm:tailwindcss@^3.4.13": "3.4.13_postcss@8.4.47",
+    "npm:types-react-dom@19.0.0-rc.1": "19.0.0-rc.1",
+    "npm:types-react-dom@^19.0.0-rc.1": "19.0.0",
+    "npm:types-react@19.0.0-rc.1": "19.0.0-rc.1",
+    "npm:types-react@^19.0.0-rc.1": "19.0.0-rc.1",
     "npm:typescript@^5.2.2": "5.6.2",
     "npm:vite@*": "5.4.8",
     "npm:vite@^5.3.4": "5.4.8",
@@ -357,6 +361,16 @@
     "@rollup/rollup-win32-x64-msvc@4.24.0": {
       "integrity": "sha512-fbMkAF7fufku0N2dE5TBXcNlg0pt0cJue4xBRE2Qc5Vqikxr4VCgKj/ht6SMdFcOacVA9rqF70APJ8RN/4vMJw=="
     },
+    "@tanstack/query-core@5.59.0": {
+      "integrity": "sha512-WGD8uIhX6/deH/tkZqPNcRyAhDUqs729bWKoByYHSogcshXfFbppOdTER5+qY7mFvu8KEFJwT0nxr8RfPTVh0Q=="
+    },
+    "@tanstack/react-query@5.59.0_react@18.3.1": {
+      "integrity": "sha512-YDXp3OORbYR+8HNQx+lf4F73NoiCmCcSvZvgxE29OifmQFk0sBlO26NWLHpcNERo92tVk3w+JQ53/vkcRUY1hA==",
+      "dependencies": [
+        "@tanstack/query-core",
+        "react@18.3.1"
+      ]
+    },
     "@tauri-apps/api@2.0.1": {
       "integrity": "sha512-eoQWT+Tq1qSwQpHV+nw1eNYe5B/nm1PoRjQCRiEOS12I1b+X4PUcREfXVX8dPcBT6GrzWGDtaecY0+1p0Rfqlw=="
     },
@@ -460,12 +474,6 @@
     },
     "@types/prop-types@15.7.13": {
       "integrity": "sha512-hCZTSvwbzWGvhqxp/RqVqwU999pBf2vp7hzIjiYOsl8wqOmUxkQ6ddw1cV3l8811+kdUFus/q4d1Y3E3SyEifA=="
-    },
-    "@types/react-dom@18.3.0": {
-      "integrity": "sha512-EhwApuTmMBmXuFOikhQLIBUn6uFg81SwLMOAUgodJF14SOBOCMdU04gDoYi0WOJJHD144TL32z4yDqCW3dnkQg==",
-      "dependencies": [
-        "@types/react"
-      ]
     },
     "@types/react@18.3.11": {
       "integrity": "sha512-r6QZ069rFTjrEYgFdOck1gK7FLVsgJE7tTz0pQBczlBNUhBNk0MQH4UbnFSwjpQLMkLzgqvBBa+qGpLje16eTQ==",
@@ -830,10 +838,10 @@
         "yallist"
       ]
     },
-    "lucide-react@0.447.0_react@18.3.1": {
+    "lucide-react@0.447.0_react@19.0.0-rc-fb9a90fa48-20240614": {
       "integrity": "sha512-SZ//hQmvi+kDKrNepArVkYK7/jfeZ5uFNEnYmd45RKZcbGD78KLnrcNXmgeg6m+xNHFvTG+CblszXCy4n6DN4w==",
       "dependencies": [
-        "react"
+        "react@19.0.0-rc-fb9a90fa48-20240614"
       ]
     },
     "merge2@1.4.1": {
@@ -964,11 +972,10 @@
     "queue-microtask@1.2.3": {
       "integrity": "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A=="
     },
-    "react-dom@18.3.1_react@18.3.1": {
-      "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
+    "react-dom@19.0.0-rc-fb9a90fa48-20240614_react@19.0.0-rc-fb9a90fa48-20240614": {
+      "integrity": "sha512-PoEsPe32F7KPLYOBvZfjylEI1B67N44PwY3lyvpmBkhlluLnLz0jH8q2Wg9YidAi6z0k3iUnNRm5x10wurzt9Q==",
       "dependencies": [
-        "loose-envify",
-        "react",
+        "react@19.0.0-rc-fb9a90fa48-20240614",
         "scheduler"
       ]
     },
@@ -980,6 +987,9 @@
       "dependencies": [
         "loose-envify"
       ]
+    },
+    "react@19.0.0-rc-fb9a90fa48-20240614": {
+      "integrity": "sha512-nvE3Gy+IOIfH/DXhkyxFVQSrITarFcQz4+shzC/McxQXEUSonpw2oDy/Wi9hdDtV3hlP12VYuDL95iiBREedNQ=="
     },
     "read-cache@1.0.0": {
       "integrity": "sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==",
@@ -1033,11 +1043,8 @@
         "queue-microtask"
       ]
     },
-    "scheduler@0.23.2": {
-      "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
-      "dependencies": [
-        "loose-envify"
-      ]
+    "scheduler@0.25.0-rc-fb9a90fa48-20240614": {
+      "integrity": "sha512-HHqQ/SqbeiDfXXVKgNxTpbQTD4n7IUb4hZATvHjp03jr3TF7igehCyHdOjeYTrzIseLO93cTTfSb5f4qWcirMQ=="
     },
     "semver@6.3.1": {
       "integrity": "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="
@@ -1157,6 +1164,24 @@
     "ts-interface-checker@0.1.13": {
       "integrity": "sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA=="
     },
+    "types-react-dom@19.0.0": {
+      "integrity": "sha512-qtWBYduBCmrgf4wqnTrGttEJJSZ6cTGmzuvmWd/34TJNKz/Pp69Islc1+txHF3nRxSuRvmhxztFXvLyxhp8G2w==",
+      "dependencies": [
+        "@types/react"
+      ]
+    },
+    "types-react-dom@19.0.0-rc.1": {
+      "integrity": "sha512-VSLZJl8VXCD0fAWp7DUTFUDCcZ8DVXOQmjhJMD03odgeFmu14ZQJHCXeETm3BEAhJqfgJaFkLnGkQv88sRx0fQ==",
+      "dependencies": [
+        "@types/react"
+      ]
+    },
+    "types-react@19.0.0-rc.1": {
+      "integrity": "sha512-RshndUfqTW6K3STLPis8BtAYCGOkMbtvYsi90gmVNDZBXUyUc5juf2PE9LfS/JmOlUIRO8cWTS/1MTnmhjDqyQ==",
+      "dependencies": [
+        "csstype"
+      ]
+    },
     "typescript@5.6.2": {
       "integrity": "sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw=="
     },
@@ -1219,16 +1244,18 @@
     "packageJson": {
       "dependencies": [
         "npm:@fontsource-variable/rubik@^5.1.0",
+        "npm:@tanstack/react-query@^5.59.0",
+        "npm:@tauri-apps/api@^2.0.1",
         "npm:@tauri-apps/plugin-dialog@2",
         "npm:@tauri-apps/plugin-fs@2",
-        "npm:@types/react-dom@^18.3.0",
-        "npm:@types/react@^18.3.11",
         "npm:@vitejs/plugin-react@^4.3.1",
         "npm:autoprefixer@^10.4.20",
         "npm:lucide-react@0.447",
-        "npm:react-dom@^18.3.1",
-        "npm:react@^18.3.1",
+        "npm:react-dom@^19.0.0-rc-1460d67c-20241003",
+        "npm:react@^19.0.0-rc-1460d67c-20241003",
         "npm:tailwindcss@^3.4.13",
+        "npm:types-react-dom@19.0.0-rc.1",
+        "npm:types-react@19.0.0-rc.1",
         "npm:typescript@^5.2.2",
         "npm:vite@^5.3.4",
         "npm:zod@^3.23.8"
