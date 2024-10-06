@@ -67,9 +67,7 @@ export function App() {
 					disabled={pending}
 					onClick={() => {
 						startTransition(() => {
-							dispatch({
-								type: "setupDb",
-							})
+							dispatch({ type: "setupDb" })
 						})
 					}}
 				>
