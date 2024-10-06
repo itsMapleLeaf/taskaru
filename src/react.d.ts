@@ -6,8 +6,15 @@ declare module "react" {
 }
 
 declare module "react-dom" {
-	// @ts-types="@types/react-dom"
+	// @ts-types="npm:@types/react-dom"
 	import ReactDOM from "npm:react-dom"
+	// @ts-expect-error: necessary workaround to get types
+	export = ReactDOM
+}
+
+declare module "react-dom/client" {
+	// @ts-types="npm:@types/react-dom/client"
+	import ReactDOM from "npm:react-dom/client"
 	// @ts-expect-error: necessary workaround to get types
 	export = ReactDOM
 }
