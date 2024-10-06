@@ -1,14 +1,65 @@
+import { open } from "@tauri-apps/plugin-dialog"
+import { exists } from "@tauri-apps/plugin-fs"
 import { Check } from "lucide-react"
-import { useEffect, useState } from "react"
-import { loadTasks, saveTasks, type Task } from "./task.ts"
+import { useRef, useState } from "react"
+import { defaultTasks, loadTasks, saveTasks, type Task } from "./task.ts"
+
+const lastFilePath = localStorage.getItem("lastFilePath")
+const initialTasks = lastFilePath ? await loadTasks(lastFilePath) : null
 
 export function App() {
-	const [tasks, setTasks] = useState(() => loadTasks())
-	const [tagFilter, setTagFilter] = useState(new Set<string>())
+	const [tasks, setTasks] = useState(initialTasks?.tasks)
+	const filepathRef = useRef(lastFilePath)
 
-	useEffect(() => {
-		saveTasks(tasks)
-	}, [tasks])
+	return tasks
+		? (
+			<TaskEditor
+				tasks={tasks}
+				setTasks={(tasks) => {
+					setTasks(tasks)
+					saveTasks(tasks, filepathRef.current!)
+				}}
+			/>
+		)
+		: (
+			<main className="absolute inset-0 flex flex-col items-center gap-4">
+				<p>Choose a location to save your tasks.</p>
+				<button
+					type="button"
+					className="bg-primary-800 focus:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg h-14 px-4 text-xl"
+					onClick={async () => {
+						const filePath = await open({
+							directory: false,
+							multiple: false,
+						})
+						if (!filePath) return
+
+						if (!await exists(filePath)) {
+							saveTasks(defaultTasks, filePath)
+							setTasks(defaultTasks)
+						} else {
+							const data = await loadTasks(filePath)
+							setTasks(data.tasks)
+						}
+
+						filepathRef.current = filePath
+						localStorage.setItem("lastFilePath", filePath)
+					}}
+				>
+					Choose location
+				</button>
+			</main>
+		)
+}
+
+function TaskEditor({
+	tasks,
+	setTasks,
+}: {
+	tasks: Task[]
+	setTasks: (tasks: Task[]) => void
+}) {
+	const [tagFilter, setTagFilter] = useState(new Set<string>())
 
 	return (
 		<div className="h-screen flex flex-col gap-2 p-4 max-w-screen-sm mx-auto w-full">
