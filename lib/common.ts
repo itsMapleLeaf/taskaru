@@ -16,3 +16,7 @@ export function lerp(a: number, b: number, t: number) {
 export function lerpInverse(t: number, a: number, b: number) {
 	return (t - a) / (b - a)
 }
+
+export function clamp(value: number, min: number, max: number) {
+	return value < min ? min : value > max ? max : value
+}

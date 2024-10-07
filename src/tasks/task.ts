@@ -6,6 +6,7 @@ export const taskSchema = z.object({
 	text: z.string(),
 	tags: z.array(z.string()).readonly(),
 	complete: z.boolean(),
+	createdAt: z.string().datetime(),
 })
 
 export function createTask(text: string, tags?: readonly string[]): Task {
@@ -14,5 +15,6 @@ export function createTask(text: string, tags?: readonly string[]): Task {
 		text,
 		tags: tags ?? [],
 		complete: false,
+		createdAt: new Date().toISOString(),
 	}
 }
