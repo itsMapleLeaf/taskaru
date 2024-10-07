@@ -2,12 +2,12 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "taskaru",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "dev.mapleleaf.taskaru",
   "build": {
-    "frontendDist": "..",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "deno run -A npm:vite",
-    "beforeBuildCommand": "deno task build"
+    "beforeBuildCommand": "deno run -A npm:vite build"
   },
   "app": {
     "windows": [
