@@ -1,9 +1,12 @@
 {
 	"tasks": {
-		"tauri": "deno run -A npm:@tauri-apps/cli",
 		"dev": "deno run -A npm:@tauri-apps/cli dev",
 		"build": "deno run -A npm:@tauri-apps/cli build",
-		"lint": "deno lint"
+		"lint": "deno lint",
+		"format": "deno fmt",
+		"check": "deno check",
+		"tauri": "deno run -A npm:@tauri-apps/cli",
+		"vite": "deno run -A npm:vite"
 	},
 	"compilerOptions": {
 		"jsx": "react-jsx",
@@ -15,5 +18,6 @@
 		"useTabs": true,
 		"exclude": [".vite", "dist"]
 	},
-	"nodeModulesDir": "auto"
+	"nodeModulesDir": "auto",
+	"exclude": ["src-tauri", ".vite", "dist"]
 }
