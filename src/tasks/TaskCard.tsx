@@ -35,13 +35,26 @@ export function TaskCard({ task }: { task: Task }) {
 						<li key={index}>
 							<button
 								type="button"
-								className="text-sm text-primary-300 hover:underline relative focus-visible:outline outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
+								className="text-sm text-primary-300 hover:underline relative rounded-sm leading-4"
 								onClick={() => store.setTagFilter(new Set([tag]))}
 							>
 								#{tag}
 							</button>
 						</li>
 					))}
+					<li className="flex-1">
+						<input
+							className="text-sm text-primary-300 relative rounded-sm border-0 leading-4 w-full min-w-[100px]"
+							placeholder="Add tag..."
+							data-focus-item
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									store.addTaskTag(task.id, event.currentTarget.value)
+									event.currentTarget.value = ""
+								}
+							}}
+						/>
+					</li>
 				</ul>
 			</ContextMenu.Trigger>
 
