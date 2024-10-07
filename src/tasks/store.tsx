@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core"
 import { save } from "@tauri-apps/plugin-dialog"
 import { exists } from "@tauri-apps/plugin-fs"
 import { createContext, use, useState, useTransition } from "react"
-import { DEFAULT_TASKS, TaskDb } from "./task-db.ts"
+import { TaskDb } from "./task-db.ts"
 import { createTask } from "./task.ts"
 
 export type TaskStore = ReturnType<typeof useTaskStore>
@@ -53,7 +53,7 @@ function useTaskStore() {
 				if (await exists(file)) {
 					setDb(await TaskDb.fromFile(file))
 				} else {
-					const db = new TaskDb(DEFAULT_TASKS, file)
+					const db = new TaskDb([], file)
 					await db.save()
 					setDb(db)
 				}

@@ -3,74 +3,11 @@ import { z } from "zod"
 import { jsonSchema } from "../../lib/json.ts"
 import { type Task, taskSchema } from "./task.ts"
 
-export const DEFAULT_TASKS: readonly Task[] = [
-	{
-		id: crypto.randomUUID(),
-		text: "be nerd in school",
-		tags: ["generic-protagonist", "glasses-push"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "get bullied",
-		tags: ["cliche-backstory", "future-revenge"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "go home",
-		tags: ["last-normal-moment", "family-dinner"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "leave house",
-		tags: ["flag-raised", "death-flag"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "get hit by a bus",
-		tags: ["truck-kun", "isekai-express"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "meet a god or goddess",
-		tags: ["exposition-dump", "cheat-code"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "get sent to a parallel world",
-		tags: ["new-life-who-dis", "medieval-fantasy"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "be overpowered",
-		tags: ["mary-sue", "nerf-please"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "get all the boys/girls/whatever",
-		tags: ["harem-time", "dense-protagonist"],
-		complete: false,
-	},
-	{
-		id: crypto.randomUUID(),
-		text: "defeat the demon lord (it's always the demon lord)",
-		tags: ["final-boss", "plot-twist-incoming"],
-		complete: false,
-	},
-]
-
 type SerializedTaskDb = z.input<typeof serializedTaskDbSchema>
 const serializedTaskDbSchema = z.object({
 	tasks: z.array(taskSchema).readonly(),
 }).catch({
-	tasks: DEFAULT_TASKS,
+	tasks: [],
 })
 
 export class TaskDb {
