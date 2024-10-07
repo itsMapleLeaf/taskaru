@@ -7,7 +7,7 @@ export function TaskListEditor() {
 
 	return (
 		<div
-			className="h-screen flex flex-col gap-4 py-4 px-14 max-w-screen-md mx-auto w-full"
+			className="h-screen flex flex-col gap-4 py-4 px-14 max-w-[720px] mx-auto w-full"
 			onKeyDown={(event) => {
 				const moveFocus = (options: { to: number } | { by: number }) => {
 					const focusItems = Array.from(
@@ -60,7 +60,7 @@ export function TaskListEditor() {
 		>
 			<div className="relative flex">
 				<textarea
-					className="bg-primary-800 focus:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg py-3 px-4 text-xl [field-sizing:content] resize-none w-full"
+					className="textarea text-lg"
 					rows={1}
 					placeholder="What's next?"
 					value={store.input}

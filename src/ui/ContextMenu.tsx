@@ -7,7 +7,6 @@ import {
 	useState,
 } from "react"
 import { twMerge } from "tailwind-merge"
-import { card } from "./styles.ts"
 
 const ContextMenuContext = createContext({
 	menuOpen: false,
@@ -63,10 +62,7 @@ function ContextMenuPanel(props: ComponentProps<typeof Ariakit.Menu>) {
 			portal
 			unmountOnHide
 			{...props}
-			className={card(
-				"shadow-lg shadow-black/20 bg-primary-800 border border-primary-700 overflow-clip min-w-32 data-[enter]:scale-100 data-[enter]:opacity-100 opacity-0 scale-90 origin-[--popover-transform-origin] transition duration-100 ease-out data-[leave]:ease-in",
-				props.className,
-			)}
+			className={twMerge("menu-panel", props.className)}
 		/>
 	)
 }
@@ -80,10 +76,7 @@ function ContextMenuItem(
 	return (
 		<Ariakit.MenuItem
 			{...props}
-			className={twMerge(
-				"flex items-center gap-2.5 px-3 py-2 hover:bg-primary-700 transition",
-				className,
-			)}
+			className={twMerge("menu-item", className)}
 		>
 			<span className="size-5 -mx-0.5 *:size-full">{icon}</span>
 			<span>{children}</span>

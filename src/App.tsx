@@ -1,11 +1,27 @@
-import { useTaskStoreContext } from "./tasks/store.tsx"
+import { StrictMode, Suspense } from "react"
+import { StoreProvider, useTaskStoreContext } from "./tasks/store.tsx"
 import { TaskListEditor } from "./tasks/TaskListEditor.tsx"
+import { LoadingIcon } from "./ui/LoadingIcon.tsx"
 
 export function App() {
 	return (
-		<OnboardingGuard>
-			<TaskListEditor />
-		</OnboardingGuard>
+		<Suspense fallback={<LoadingCover />}>
+			<StrictMode>
+				<StoreProvider>
+					<OnboardingGuard>
+						<TaskListEditor />
+					</OnboardingGuard>
+				</StoreProvider>
+			</StrictMode>
+		</Suspense>
+	)
+}
+
+function LoadingCover() {
+	return (
+		<main className="absolute inset-0 h-screen justify-center flex flex-col items-center">
+			<LoadingIcon />
+		</main>
 	)
 }
 
@@ -21,7 +37,7 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 			<p>Choose a location to save your tasks.</p>
 			<button
 				type="button"
-				className="bg-primary-800 rounded-lg h-14 px-4 text-xl disabled:opacity-50 hover:bg-primary-700 active:bg-primary-600 active:duration-0 transition"
+				className="button button-lg"
 				onClick={() => {
 					store.init()
 				}}

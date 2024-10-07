@@ -8,12 +8,12 @@ export function TaskCard({ task }: { task: Task }) {
 	return (
 		<ContextMenu>
 			<ContextMenu.Trigger
-				className="grid gap-2 grid-cols-[auto,1fr] data-[completed]:opacity-50 transition-opacity"
+				className="grid gap-2 grid-cols-[auto_1fr] data-[completed]:opacity-50 transition-opacity"
 				data-completed={task.complete || undefined}
 			>
 				<button
 					type="button"
-					className="rounded-md size-10 grid place-content-center hover:bg-primary-700 transition self-center"
+					className="button button-clear button-square self-center"
 					role="checkbox"
 					aria-checked={task.complete}
 					onClick={() => store.setTaskComplete(task.id, !task.complete)}
@@ -22,7 +22,7 @@ export function TaskCard({ task }: { task: Task }) {
 				</button>
 
 				<textarea
-					className="bg-primary-800 focus-visible:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg py-3 px-4 text-xl flex items-center w-full text-start has-[[aria-checked=true]]:opacity-50 transition relative hover:bg-primary-700 resize-none [field-sizing:content]"
+					className="textarea text-lg"
 					defaultValue={task.text}
 					onChange={(event) =>
 						store.setTaskText(task.id, event.target.value)}

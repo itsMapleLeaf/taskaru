@@ -1,0 +1,48 @@
+/* default tailwind theme: https://github.com/tailwindlabs/tailwindcss/blob/next/packages/tailwindcss/theme.css */
+@theme {
+	--default-font-family: "Rubik Variable";
+
+	/* #region Colors */
+	--primary-hue: 290;
+	--primary-light: oklch(95% 15% var(--primary-hue));
+	--primary-dark: oklch(18% 12% var(--primary-hue));
+
+	--color-primary-100: var(--primary-light);
+	--color-primary-200: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(1 / 8 * 100%)
+	);
+	--color-primary-300: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(2 / 8 * 100%)
+	);
+	--color-primary-400: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(3 / 8 * 100%)
+	);
+	--color-primary-500: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(4 / 8 * 100%)
+	);
+	--color-primary-600: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(5 / 8 * 100%)
+	);
+	--color-primary-700: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(6 / 8 * 100%)
+	);
+	--color-primary-800: color-mix(
+		in oklch,
+		var(--primary-light),
+		var(--primary-dark) calc(7 / 8 * 100%)
+	);
+	--color-primary-900: var(--primary-dark);
+	/* #endregion */
+}

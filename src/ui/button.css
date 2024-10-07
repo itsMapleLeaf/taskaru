@@ -1,0 +1,64 @@
+@utility button {
+	--button-bg: var(--color-primary-800);
+	--button-bg-hover: var(--color-primary-700);
+	--button-bg-active: var(--color-primary-600);
+	--button-padding-x: var(--spacing-3);
+	--button-padding-y: 0;
+	--button-height: var(--spacing-10);
+	--button-aspect-ratio: none;
+	--button-font-size: var(--font-size-base);
+
+	font-size: var(--button-font-size);
+
+	background-color: var(--button-bg);
+
+	height: var(--button-height);
+	padding: var(--button-padding-y) var(--button-padding-x);
+	aspect-ratio: var(--button-aspect-ratio);
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-2);
+
+	@apply rounded-md transition active:duration-0;
+
+	&:hover {
+		background-color: var(--button-bg-hover);
+	}
+
+	&:active {
+		background-color: var(--button-bg-active);
+	}
+}
+
+@utility button-sm {
+	--button-font-size: var(--font-size-sm);
+	--button-padding-x: var(--spacing-2);
+	--button-height: var(--spacing-8);
+}
+
+@utility button-md {
+	--button-font-size: var(--font-size-base);
+	--button-padding-x: var(--spacing-3);
+	--button-height: var(--spacing-10);
+}
+
+@utility button-lg {
+	--button-font-size: var(--font-size-lg);
+	--button-padding-x: var(--spacing-4);
+	--button-height: var(--spacing-12);
+}
+
+@utility button-clear {
+	--button-bg: transparent;
+}
+
+@utility button-square {
+	--button-padding-x: 0;
+	--button-padding-y: 0;
+	--button-height: var(--spacing-10);
+	--button-aspect-ratio: 1 / 1;
+	display: grid;
+	place-content: center;
+}

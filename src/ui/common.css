@@ -1,0 +1,13 @@
+@utility card {
+	background-color: var(--color-primary-800);
+	border-radius: var(--rounded-lg);
+}
+
+@utility raised {
+	@apply shadow-md shadow-black/20;
+}
+
+@utility textarea {
+	@apply card bg-primary-800 border-0 rounded-lg py-3 px-4 flex items-center w-full text-start transition relative resize-none;
+	field-sizing: content;
+}

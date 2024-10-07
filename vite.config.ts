@@ -1,4 +1,5 @@
 import deno from "@deno/vite-plugin"
+import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
@@ -6,7 +7,8 @@ const host = Deno.env.get("TAURI_DEV_HOST")
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [deno(), react()],
+	// @ts-expect-error: vite plugin types keep exploding
+	plugins: [deno(), react(), tailwindcss()],
 	clearScreen: false,
 	server: {
 		port: 5173,

@@ -1,0 +1,37 @@
+:root {
+	scrollbar-gutter: stable-both;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--color-primary-700);
+	border-radius: 9999px;
+	transition-property: background-color;
+	transition-duration: var(--default-transition-duration);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--color-primary-600);
+}
+
+::-webkit-scrollbar-thumb:active {
+	background-color: var(--color-primary-500);
+}
+
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-primary-600);
+	outline-offset: 2px;
+}
+
+button,
+[role="button"],
+[role="menuitem"] {
+	cursor: default;
+}
