@@ -1,4 +1,5 @@
 import * as Lucide from "lucide-react"
+import { matchSorter } from "match-sorter"
 import { useTaskStoreContext } from "./store.tsx"
 import { TaskCard } from "./TaskCard.tsx"
 
@@ -23,6 +24,10 @@ export function TaskListEditor() {
 						: mod(currentIndex + options.by, focusItems.length)
 					const nextItem = focusItems.at(nextIndex)
 					nextItem?.focus()
+					nextItem?.scrollIntoView({
+						behavior: "smooth",
+						block: "center",
+					})
 				}
 
 				if (event.key === "ArrowDown" && event.ctrlKey) {
@@ -98,16 +103,13 @@ export function TaskListEditor() {
 			</ul>
 
 			<ul className="flex flex-col gap-4 -ml-16 -mr-4 -my-2 py-2 pl-4 pr-2 flex-1 min-h-0 overflow-y-scroll">
-				{store.tasks
-					.filter((task) =>
-						!store.tagFilter.size ||
-						task.tags.some((tag) => store.tagFilter.has(tag))
-					)
-					.map((task) => (
-						<li key={task.id}>
-							<TaskCard task={task} />
-						</li>
-					))}
+				{matchSorter(store.tasks, store.input, {
+					keys: ["text", "tags.*"],
+				}).map((task) => (
+					<li key={task.id}>
+						<TaskCard task={task} />
+					</li>
+				))}
 			</ul>
 		</div>
 	)
