@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core"
 import { save } from "@tauri-apps/plugin-dialog"
 import { exists } from "@tauri-apps/plugin-fs"
 import { createContext, use, useState, useTransition } from "react"
@@ -29,6 +30,7 @@ function useTaskStore() {
 		startTransition(async () => {
 			setDb(updated)
 			await updated.save()
+			localStorage.setItem("lastFilePath", updated.file)
 		})
 	}
 
@@ -45,6 +47,8 @@ function useTaskStore() {
 				if (!file) {
 					return
 				}
+
+				await invoke("add_path_to_fs_scope", { path: file })
 
 				if (await exists(file)) {
 					setDb(await TaskDb.fromFile(file))
@@ -70,6 +74,12 @@ function useTaskStore() {
 
 		setTaskComplete: (id: string, complete: boolean) => {
 			updateDb((db) => db.withUpdatedTask(id, (it) => ({ ...it, complete })))
+		},
+
+		toggleTaskComplete: (id: string) => {
+			updateDb((db) =>
+				db.withUpdatedTask(id, (it) => ({ ...it, complete: !it.complete }))
+			)
 		},
 
 		addTaskTag: (id: string, tag: string) => {

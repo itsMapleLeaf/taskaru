@@ -1,5 +1,5 @@
-import { useTaskStoreContext } from "./store.tsx"
-import { TaskListEditor } from "./TaskListEditor.tsx"
+import { useTaskStoreContext } from "./tasks/store.tsx"
+import { TaskListEditor } from "./tasks/TaskListEditor.tsx"
 
 export function App() {
 	return (

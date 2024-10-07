@@ -1,18 +1,16 @@
 import * as Lucide from "lucide-react"
-import {
-	ContextMenuItem,
-	ContextMenuPanel,
-	ContextMenuProvider,
-	ContextMenuTrigger,
-} from "./ContextMenu.tsx"
+import { ContextMenu } from "../ui/ContextMenu.tsx"
 import { useTaskStoreContext } from "./store.tsx"
 import type { Task } from "./task.ts"
 
 export function TaskCard({ task }: { task: Task }) {
 	const store = useTaskStoreContext()
 	return (
-		<ContextMenuProvider>
-			<ContextMenuTrigger className="grid gap-2 grid-cols-[auto,1fr]">
+		<ContextMenu>
+			<ContextMenu.Trigger
+				className="grid gap-2 grid-cols-[auto,1fr] data-[completed]:opacity-50 transition-opacity"
+				data-completed={task.complete || undefined}
+			>
 				<button
 					type="button"
 					className="rounded-md size-10 grid place-content-center hover:bg-primary-700 transition self-center"
@@ -28,6 +26,8 @@ export function TaskCard({ task }: { task: Task }) {
 					defaultValue={task.text}
 					onChange={(event) =>
 						store.setTaskText(task.id, event.target.value)}
+					data-focus-item
+					data-task-id={task.id}
 				/>
 
 				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden col-start-2 -col-end-1">
@@ -43,16 +43,16 @@ export function TaskCard({ task }: { task: Task }) {
 						</li>
 					))}
 				</ul>
-			</ContextMenuTrigger>
+			</ContextMenu.Trigger>
 
-			<ContextMenuPanel>
-				<ContextMenuItem
+			<ContextMenu.Panel>
+				<ContextMenu.Item
 					icon={<Lucide.Trash />}
 					onClick={() => store.removeTask(task.id)}
 				>
 					<span>Delete</span>
-				</ContextMenuItem>
-			</ContextMenuPanel>
-		</ContextMenuProvider>
+				</ContextMenu.Item>
+			</ContextMenu.Panel>
+		</ContextMenu>
 	)
 }

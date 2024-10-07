@@ -1,6 +1,6 @@
 import { exists, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { z } from "zod"
-import { jsonSchema } from "../lib/json.ts"
+import { jsonSchema } from "../../lib/json.ts"
 import { type Task, taskSchema } from "./task.ts"
 
 export const DEFAULT_TASKS: readonly Task[] = [

@@ -16,7 +16,7 @@ const ContextMenuContext = createContext({
 	setMenuPosition: (_position: { x: number; y: number }) => {},
 })
 
-export function ContextMenuProvider({
+export function ContextMenu({
 	children,
 }: { children: React.ReactNode }) {
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -32,7 +32,8 @@ export function ContextMenuProvider({
 	)
 }
 
-export function ContextMenuTrigger(props: ComponentProps<"div">) {
+ContextMenu.Trigger = ContextMenuTrigger
+function ContextMenuTrigger(props: ComponentProps<"div">) {
 	const context = use(ContextMenuContext)
 	return (
 		<div
@@ -53,7 +54,8 @@ export function ContextMenuTrigger(props: ComponentProps<"div">) {
 	)
 }
 
-export function ContextMenuPanel(props: ComponentProps<typeof Ariakit.Menu>) {
+ContextMenu.Panel = ContextMenuPanel
+function ContextMenuPanel(props: ComponentProps<typeof Ariakit.Menu>) {
 	const context = use(ContextMenuContext)
 	return (
 		<Ariakit.Menu
@@ -69,7 +71,8 @@ export function ContextMenuPanel(props: ComponentProps<typeof Ariakit.Menu>) {
 	)
 }
 
-export function ContextMenuItem(
+ContextMenu.Item = ContextMenuItem
+function ContextMenuItem(
 	{ children, className, icon, ...props }:
 		& ComponentProps<typeof Ariakit.MenuItem>
 		& { icon?: ReactNode },

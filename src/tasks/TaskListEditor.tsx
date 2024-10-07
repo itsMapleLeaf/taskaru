@@ -6,13 +6,65 @@ export function TaskListEditor() {
 	const store = useTaskStoreContext()
 
 	return (
-		<div className="h-screen flex flex-col gap-4 py-4 px-14 max-w-screen-md mx-auto w-full">
+		<div
+			className="h-screen flex flex-col gap-4 py-4 px-14 max-w-screen-md mx-auto w-full"
+			onKeyDown={(event) => {
+				const moveFocus = (options: { to: number } | { by: number }) => {
+					const focusItems = Array.from(
+						event.currentTarget.querySelectorAll<HTMLElement>(
+							"[data-focus-item]",
+						),
+					)
+					const currentIndex = focusItems.findIndex(
+						(element) => document.activeElement === element,
+					)
+					const nextIndex = "to" in options
+						? options.to
+						: mod(currentIndex + options.by, focusItems.length)
+					const nextItem = focusItems.at(nextIndex)
+					nextItem?.focus()
+				}
+
+				if (event.key === "ArrowDown" && event.ctrlKey) {
+					moveFocus({ by: 1 })
+				}
+				if (event.key === "ArrowUp" && event.ctrlKey) {
+					moveFocus({ by: -1 })
+				}
+				if (event.key === "Home" && event.ctrlKey) {
+					moveFocus({ to: 0 })
+				}
+				if (event.key === "End" && event.ctrlKey) {
+					moveFocus({ to: -1 })
+				}
+				if (
+					event.key === "Enter" &&
+					event.ctrlKey &&
+					event.target instanceof HTMLTextAreaElement &&
+					event.target.dataset.taskId
+				) {
+					event.preventDefault()
+					store.toggleTaskComplete(event.target.dataset.taskId)
+				}
+				if (
+					event.key === "Delete" &&
+					event.ctrlKey &&
+					event.target instanceof HTMLTextAreaElement &&
+					event.target.dataset.taskId
+				) {
+					event.preventDefault()
+					moveFocus({ by: 1 })
+					store.removeTask(event.target.dataset.taskId)
+				}
+			}}
+		>
 			<div className="relative flex">
 				<textarea
 					className="bg-primary-800 focus:outline outline-2 outline-primary-600 outline-offset-2 rounded-lg py-3 px-4 text-xl [field-sizing:content] resize-none w-full"
 					rows={1}
 					placeholder="What's next?"
 					value={store.input}
+					data-focus-item
 					onChange={(event) => store.setInput(event.target.value)}
 					onKeyDown={(event) => {
 						if (
@@ -48,9 +100,8 @@ export function TaskListEditor() {
 			<ul className="flex flex-col gap-4 -ml-16 -mr-4 -my-2 py-2 pl-4 pr-2 flex-1 min-h-0 overflow-y-scroll">
 				{store.tasks
 					.filter((task) =>
-						!store.tagFilter.size || task.tags.some((tag) =>
-							store.tagFilter.has(tag)
-						)
+						!store.tagFilter.size ||
+						task.tags.some((tag) => store.tagFilter.has(tag))
 					)
 					.map((task) => (
 						<li key={task.id}>
@@ -60,4 +111,8 @@ export function TaskListEditor() {
 			</ul>
 		</div>
 	)
+}
+
+function mod(a: number, b: number) {
+	return ((a % b) + b) % b
 }
