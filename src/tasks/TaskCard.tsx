@@ -30,15 +30,24 @@ export function TaskCard({ task }: { task: Task }) {
 					data-task-id={task.id}
 				/>
 
-				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden col-start-2 -col-end-1">
+				<ul className="flex items-center gap-2 flex-wrap leading-none empty:hidden col-start-2 -col-end-1">
 					{task.tags.map((tag, index) => (
-						<li key={index}>
+						<li key={index} className="flex gap-1 items-center">
 							<button
 								type="button"
 								className="text-sm text-primary-300 hover:underline relative rounded-sm leading-4"
-								onClick={() => store.setTagFilter(new Set([tag]))}
+								onClick={() =>
+									store.setTagFilter(new Set([tag]))}
 							>
 								#{tag}
+							</button>
+							<button
+								type="button"
+								className="button button-clear button-square h-5"
+								onClick={() =>
+									store.removeTaskTag(task.id, tag)}
+							>
+								<Lucide.X className="size-3" />
 							</button>
 						</li>
 					))}
