@@ -5,7 +5,7 @@ import {
 	Submenu,
 } from "@tauri-apps/api/menu"
 import { getCurrentWindow } from "@tauri-apps/api/window"
-import { open, save } from "@tauri-apps/plugin-dialog"
+import * as tauriDialog from "@tauri-apps/plugin-dialog"
 import { exists } from "@tauri-apps/plugin-fs"
 import {
 	createContext,
@@ -91,7 +91,7 @@ function useTaskStore() {
 
 		open: () => {
 			startTransition(async () => {
-				const file = await open({
+				const file = await tauriDialog.open({
 					filters: [{ name: "JSON", extensions: ["json"] }],
 				})
 
@@ -117,7 +117,7 @@ function useTaskStore() {
 
 		saveAs: () => {
 			startTransition(async () => {
-				const file = await save({
+				const file = await tauriDialog.save({
 					defaultPath: "tasks.json",
 					filters: [{ name: "JSON", extensions: ["json"] }],
 				})
@@ -173,15 +173,29 @@ function useTaskStore() {
 				await PredefinedMenuItem.new({
 					item: "Separator",
 				}),
-				await MenuItem.new({
-					text: "Quit",
-					accelerator: "CmdOrCtrl+Q",
-					action: () => getCurrentWindow().close(),
-				}),
+				await PredefinedMenuItem.new({ item: "Quit" }),
 			].filter(Boolean))
 
+			const helpMenu = await Submenu.new({ text: "Help" })
+
+			helpMenu.append([
+				await MenuItem.new({
+					text: "About",
+					action: async () => {
+						const metadata = await import("../../src-tauri/tauri.conf.json")
+						tauriDialog.message(
+							`${metadata.default.productName} v${metadata.default.version}`,
+							{
+								kind: "info",
+								okLabel: "thanks",
+							},
+						)
+					},
+				}),
+			])
+
 			const menu = await Menu.new({
-				items: [fileMenu],
+				items: [fileMenu, helpMenu],
 			})
 
 			if (!cancelled) {
