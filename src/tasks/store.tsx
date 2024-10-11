@@ -1,7 +1,20 @@
-import { invoke } from "@tauri-apps/api/core"
-import { save } from "@tauri-apps/plugin-dialog"
+import {
+	Menu,
+	MenuItem,
+	PredefinedMenuItem,
+	Submenu,
+} from "@tauri-apps/api/menu"
+import { getCurrentWindow } from "@tauri-apps/api/window"
+import { open, save } from "@tauri-apps/plugin-dialog"
 import { exists } from "@tauri-apps/plugin-fs"
-import { createContext, use, useState, useTransition } from "react"
+import {
+	createContext,
+	use,
+	useEffect,
+	useRef,
+	useState,
+	useTransition,
+} from "react"
 import { TaskDb } from "./task-db.ts"
 import { createTask } from "./task.ts"
 
@@ -18,6 +31,7 @@ const lastTaskDbPromise = lastFilePath
 
 function useTaskStore() {
 	const [db, setDb] = useState<TaskDb | null>(use(lastTaskDbPromise))
+	const hasDb = db != null
 	const [input, setInput] = useState("")
 	const [tagFilter, setTagFilter] = useState<ReadonlySet<string>>(new Set())
 	const [pending, startTransition] = useTransition()
@@ -35,31 +49,6 @@ function useTaskStore() {
 	}
 
 	const actions = {
-		init: () => {
-			startTransition(async () => {
-				const file = await save({
-					defaultPath: "tasks.json",
-					filters: [
-						{ name: "JSON", extensions: ["json"] },
-					],
-				})
-
-				if (!file) {
-					return
-				}
-
-				await invoke("add_path_to_fs_scope", { path: file })
-
-				if (await exists(file)) {
-					setDb(await TaskDb.fromFile(file))
-				} else {
-					const db = new TaskDb([], file)
-					await db.save()
-					setDb(db)
-				}
-			})
-		},
-
 		addTask: (text: string) => {
 			updateDb((db) => db.withNewTask(createTask(text)))
 		},
@@ -99,7 +88,113 @@ function useTaskStore() {
 				}))
 			)
 		},
+
+		open: () => {
+			startTransition(async () => {
+				const file = await open({
+					filters: [{ name: "JSON", extensions: ["json"] }],
+				})
+
+				if (!file) return
+
+				if (await exists(file)) {
+					setDb(await TaskDb.fromFile(file))
+					localStorage.setItem("lastFilePath", file)
+				}
+			})
+		},
+
+		save: () => {
+			if (!db) {
+				actions.saveAs()
+				return
+			}
+
+			startTransition(async () => {
+				await db.save()
+			})
+		},
+
+		saveAs: () => {
+			startTransition(async () => {
+				const file = await save({
+					defaultPath: "tasks.json",
+					filters: [{ name: "JSON", extensions: ["json"] }],
+				})
+
+				if (!file) return
+
+				const updatedDb = db ? new TaskDb(db.tasks, file) : new TaskDb([], file)
+				await updatedDb.save()
+				setDb(updatedDb)
+				localStorage.setItem("lastFilePath", file)
+			})
+		},
+
+		close: () => {
+			setDb(null)
+		},
+
+		quit: () => {
+			getCurrentWindow().close()
+		},
 	}
+	const actionsRef = useLatestRef(actions)
+
+	useEffect(() => {
+		let cancelled = false
+
+		void (async () => {
+			const fileMenu = await Submenu.new({
+				text: "File",
+			})
+
+			await fileMenu.append([
+				await MenuItem.new({
+					text: "Open...",
+					accelerator: "CmdOrCtrl+O",
+					action: () => actionsRef.current.open(),
+				}),
+				hasDb && await MenuItem.new({
+					text: "Save",
+					accelerator: "CmdOrCtrl+S",
+					action: () => actionsRef.current.save(),
+				}),
+				hasDb && await MenuItem.new({
+					text: "Save as...",
+					accelerator: "CmdOrCtrl+Shift+S",
+					action: () => actionsRef.current.saveAs(),
+				}),
+				hasDb && await MenuItem.new({
+					text: "Close",
+					accelerator: "CmdOrCtrl+W",
+					action: () => actionsRef.current.close(),
+				}),
+				await PredefinedMenuItem.new({
+					item: "Separator",
+				}),
+				await MenuItem.new({
+					text: "Quit",
+					accelerator: "CmdOrCtrl+Q",
+					action: () => getCurrentWindow().close(),
+				}),
+			].filter(Boolean))
+
+			const menu = await Menu.new({
+				items: [fileMenu],
+			})
+
+			if (!cancelled) {
+				const win = getCurrentWindow()
+				await menu.setAsWindowMenu(win)
+				await menu.setAsAppMenu()
+			}
+		})()
+
+		return () => {
+			cancelled = true
+		}
+	}, [actionsRef, hasDb])
 
 	return {
 		...actions,
@@ -130,4 +225,12 @@ export function useTaskStoreContext() {
 		throw new Error("TaskStore not found")
 	}
 	return store
+}
+
+function useLatestRef<T>(value: T) {
+	const ref = useRef<T>(value)
+	useEffect(() => {
+		ref.current = value
+	})
+	return ref
 }

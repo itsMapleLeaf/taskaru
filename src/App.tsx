@@ -34,15 +34,24 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
 	return (
 		<main className="absolute inset-0 flex justify-center flex-col items-center gap-4">
-			<p>Choose a location to save your tasks.</p>
 			<button
 				type="button"
 				className="button button-lg"
 				onClick={() => {
-					store.init()
+					store.saveAs()
 				}}
 			>
-				Choose location
+				Create new tasks file
+			</button>
+			<p>or</p>
+			<button
+				type="button"
+				className="button button-lg"
+				onClick={() => {
+					store.open()
+				}}
+			>
+				Open existing tasks file
 			</button>
 		</main>
 	)
