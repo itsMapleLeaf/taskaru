@@ -16,7 +16,7 @@ export function TaskListEditor() {
 		store.input,
 		{
 			keys: ["text", "tags.*"],
-			baseSort: (a, b) => a.item.createdAt.localeCompare(b.item.createdAt),
+			baseSort: (a, b) => b.item.createdAt.localeCompare(a.item.createdAt),
 		},
 	)
 
