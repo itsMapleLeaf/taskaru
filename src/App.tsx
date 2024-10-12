@@ -1,8 +1,7 @@
 import * as tauriDialog from "@tauri-apps/plugin-dialog"
 import { exists } from "@tauri-apps/plugin-fs"
-import { startTransition, use, useState, useTransition } from "react"
+import { use, useState, useTransition } from "react"
 import { TaskDb } from "./tasks/task-db.ts"
-import type { Task } from "./tasks/task.ts"
 import { TaskListEditor } from "./tasks/TaskListEditor.tsx"
 
 const lastFilePath = localStorage.getItem("lastFilePath")
@@ -24,19 +23,8 @@ export function App() {
 		localStorage.setItem("lastFilePath", db.file)
 	}
 
-	const handleTasksUpdated = (db: TaskDb, tasks: readonly Task[]) => {
-		const newDb = db.withTasks(tasks)
-		setDb(newDb)
-		startTransition(() => newDb.save())
-	}
-
 	return db
-		? (
-			<TaskListEditor
-				db={db}
-				onUpdateTasks={(tasks) => handleTasksUpdated(db, tasks)}
-			/>
-		)
+		? <TaskListEditor initialDb={db} />
 		: <Onboarding onDbSelected={handleDbSelected} />
 }
 

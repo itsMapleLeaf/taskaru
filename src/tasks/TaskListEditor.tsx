@@ -1,6 +1,6 @@
 import * as Lucide from "lucide-react"
 import { matchSorter } from "match-sorter"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useReducer, useRef } from "react"
 import { match, P } from "ts-pattern"
 import { clamp, ensure } from "../../lib/common.ts"
 import type { TaskDb } from "./task-db.ts"
@@ -31,16 +31,174 @@ function getFilteredTasks(
 	return result.map((task) => ({ ...task, tags: task.tags.toSorted() }))
 }
 
-export function TaskListEditor({ db, onUpdateTasks }: {
+type State = {
 	db: TaskDb
-	onUpdateTasks: (tasks: readonly Task[]) => void
-}) {
-	const [search, setSearch] = useState("")
-	const [tagFilter, setTagFilter] = useState<ReadonlySet<string>>(new Set())
-	const [filteredTasks, setFilteredTasks] = useState<Task[]>(
-		() => getFilteredTasks(db.tasks, search, tagFilter),
-	)
+	search: string
+	tagFilter: ReadonlySet<string>
+	filteredTasks: Task[]
+	save: boolean
+}
+
+type Action =
+	| { type: "inputChanged"; input: string }
+	| { type: "taskAdded"; task: Task }
+	| { type: "tagClicked"; tag: string }
+	| { type: "tagFilterRemoved"; tag: string }
+	| { type: "taskChanged"; task: Task }
+	| { type: "taskRemoved"; taskId: string }
+
+function reducer(state: State, action: Action): State {
+	if (action.type === "inputChanged") {
+		return {
+			...state,
+			search: action.input,
+			filteredTasks: getFilteredTasks(
+				state.db.tasks,
+				action.input,
+				state.tagFilter,
+			),
+			save: false,
+		}
+	}
+	if (action.type === "taskAdded") {
+		const db = state.db.withNewTask(action.task)
+		return {
+			...state,
+			search: "",
+			db,
+			filteredTasks: getFilteredTasks(db.tasks, "", state.tagFilter),
+			save: true,
+		}
+	}
+	if (action.type === "tagClicked") {
+		const tagFilter = new Set([...state.tagFilter, action.tag])
+		return {
+			...state,
+			tagFilter,
+			filteredTasks: getFilteredTasks(
+				state.db.tasks,
+				state.search,
+				tagFilter,
+			),
+			save: false,
+		}
+	}
+	if (action.type === "tagFilterRemoved") {
+		const tagFilter = new Set(state.tagFilter)
+		tagFilter.delete(action.tag)
+		return {
+			...state,
+			tagFilter,
+			filteredTasks: getFilteredTasks(
+				state.db.tasks,
+				state.search,
+				tagFilter,
+			),
+			save: false,
+		}
+	}
+	if (action.type === "taskChanged") {
+		const db = state.db.withUpdatedTask(action.task.id, () => action.task)
+		return {
+			...state,
+			db,
+			filteredTasks: state.filteredTasks.map((task) =>
+				task.id === action.task.id ? action.task : task
+			),
+			save: true,
+		}
+	}
+	if (action.type === "taskRemoved") {
+		const db = state.db.withoutTask(action.taskId)
+		return {
+			...state,
+			db,
+			filteredTasks: state.filteredTasks.filter((task) =>
+				task.id !== action.taskId
+			),
+			save: true,
+		}
+	}
+	action satisfies never
+	throw new Error(`unexpected action`, { cause: action })
+}
+
+export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
+	const [state, dispatch] = useReducer(reducer, {
+		search: "",
+		tagFilter: new Set<string>(),
+		filteredTasks: getFilteredTasks(initialDb.tasks, "", new Set()),
+		save: false,
+		db: initialDb,
+	})
+
 	const containerRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		if (state.save) {
+			state.db.save().catch((error) => {
+				console.error("Failed to save DB:", error)
+			})
+		}
+	}, [state.save, state.db])
+
+	useEffect(() => {
+		const controller = new AbortController()
+
+		addEventListener("keydown", (event) => {
+			match(event)
+				.with({ key: "ArrowDown", ctrlKey: true }, () => {
+					moveFocus({ by: 1 })
+				})
+				.with({ key: "ArrowUp", ctrlKey: true }, () => {
+					moveFocus({ by: -1 })
+				})
+				.with({ key: "Home", ctrlKey: true }, () => {
+					moveFocus({ to: 0 })
+				})
+				.with({ key: "End", ctrlKey: true }, () => {
+					moveFocus({ to: -1 })
+				})
+				.with({
+					key: P.union("Enter", " "),
+					ctrlKey: true,
+					target: P.instanceOf(HTMLElement).and(
+						P.shape({
+							dataset: { taskId: P.string },
+						}),
+					),
+				}, (event) => {
+					event.preventDefault()
+					const taskToUpdate = state.db.tasks.find((t) =>
+						t.id === event.target.dataset.taskId
+					)!
+					dispatch({
+						type: "taskChanged",
+						task: { ...taskToUpdate, complete: !taskToUpdate.complete },
+					})
+				})
+				.with({
+					key: "Delete",
+					ctrlKey: true,
+					target: P.instanceOf(HTMLElement).and(
+						P.shape({
+							dataset: { taskId: P.string },
+						}),
+					),
+				}, (event) => {
+					event.preventDefault()
+					dispatch({
+						type: "taskRemoved",
+						taskId: event.target.dataset.taskId,
+					})
+				})
+				.otherwise(() => {})
+		}, { signal: controller.signal })
+
+		return () => {
+			controller.abort()
+		}
+	})
 
 	const moveFocus = (
 		options: { to: number } | { by: number } | { byClamped: number },
@@ -79,133 +237,6 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 		}
 	}
 
-	const handleInputChange = (
-		event: React.ChangeEvent<HTMLTextAreaElement>,
-	) => {
-		setSearch(event.target.value)
-		setFilteredTasks(
-			getFilteredTasks(db.tasks, event.target.value, tagFilter),
-		)
-	}
-
-	const handleInputKeyDown = (
-		event: React.KeyboardEvent<HTMLTextAreaElement>,
-	) => {
-		if (
-			event.key === "Enter" && !event.shiftKey &&
-			!event.ctrlKey
-		) {
-			event.preventDefault()
-			const updated = db.withNewTask(
-				createTask(event.currentTarget.value),
-			)
-			setSearch("")
-			setFilteredTasks(
-				getFilteredTasks(updated.tasks, "", tagFilter),
-			)
-			onUpdateTasks(updated.tasks)
-		}
-	}
-
-	const handleTaskChange = (task: Task) => {
-		const updated = db.withUpdatedTask(task.id, () => task)
-		onUpdateTasks(updated.tasks)
-
-		// instead of setting all of the filtered tasks,
-		// only update the specific task that changed,
-		// to keep the whole list from shifting when changing a single task
-		setFilteredTasks((tasks) =>
-			tasks.map((current) => current.id === task.id ? task : current)
-		)
-	}
-
-	const handleTaskRemoved = (taskId: string) => {
-		const updated = db.withoutTask(taskId)
-		onUpdateTasks(updated.tasks)
-		setFilteredTasks(getFilteredTasks(updated.tasks, search, tagFilter))
-	}
-
-	const handleTaskTagClicked = (tag: string) => {
-		const newFilter = new Set([...tagFilter, tag])
-		setTagFilter(newFilter)
-		setFilteredTasks(getFilteredTasks(db.tasks, search, newFilter))
-	}
-
-	const handleTagFilterRemoved = (tag: string) => {
-		const newFilter = new Set(tagFilter)
-		newFilter.delete(tag)
-		setTagFilter(newFilter)
-		setFilteredTasks(getFilteredTasks(db.tasks, search, newFilter))
-	}
-
-	useEffect(() => {
-		const controller = new AbortController()
-
-		addEventListener("keydown", (event) => {
-			match(event)
-				.with({ key: "ArrowDown", ctrlKey: true }, () => {
-					moveFocus({ by: 1 })
-				})
-				.with({ key: "ArrowUp", ctrlKey: true }, () => {
-					moveFocus({ by: -1 })
-				})
-				.with({ key: "Home", ctrlKey: true }, () => {
-					moveFocus({ to: 0 })
-				})
-				.with({ key: "End", ctrlKey: true }, () => {
-					moveFocus({ to: -1 })
-				})
-				.with({
-					key: P.union("Enter", " "),
-					ctrlKey: true,
-					target: P.instanceOf(HTMLElement).and(
-						P.shape({
-							dataset: { taskId: P.string },
-						}),
-					),
-				}, (event) => {
-					event.preventDefault()
-					const updated = db.withUpdatedTask(
-						event.target.dataset.taskId,
-						(it) => ({ ...it, complete: !it.complete }),
-					)
-					onUpdateTasks(updated.tasks)
-
-					// instead of setting all of the filtered tasks,
-					// only update the specific task that changed,
-					// to keep the whole list from shifting when changing a single task
-					setFilteredTasks((tasks) =>
-						tasks.map((it) =>
-							it.id === event.target.dataset.taskId
-								? ({ ...it, complete: !it.complete })
-								: it
-						)
-					)
-				})
-				.with({
-					key: "Delete",
-					ctrlKey: true,
-					target: P.instanceOf(HTMLElement).and(
-						P.shape({
-							dataset: { taskId: P.string },
-						}),
-					),
-				}, (event) => {
-					event.preventDefault()
-					const updated = db.withoutTask(event.target.dataset.taskId)
-					onUpdateTasks(updated.tasks)
-					setFilteredTasks(
-						getFilteredTasks(updated.tasks, search, tagFilter),
-					)
-				})
-				.otherwise(() => {})
-		}, { signal: controller.signal })
-
-		return () => {
-			controller.abort()
-		}
-	})
-
 	return (
 		<div
 			className="px-14 max-w-[720px] mx-auto w-full isolate pb-16"
@@ -218,19 +249,33 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 						rows={1}
 						placeholder="What's next?"
 						data-focus-item
-						value={search}
-						onChange={handleInputChange}
-						onKeyDown={handleInputKeyDown}
+						value={state.search}
+						onChange={(event) =>
+							dispatch({
+								type: "inputChanged",
+								input: event.target.value,
+							})}
+						onKeyDown={(event) => {
+							if (
+								event.key === "Enter" && !event.shiftKey &&
+								!event.ctrlKey
+							) {
+								event.preventDefault()
+								const newTask = createTask(event.currentTarget.value)
+								dispatch({ type: "taskAdded", task: newTask })
+							}
+						}}
 					/>
 					<Lucide.Loader2 className="self-center absolute right-0 h-full aspect-square animate-spin data-[pending]:opacity-50 opacity-0 transition-opacity" />
 				</div>
 				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden mb-4">
-					{[...tagFilter].map((tag) => (
+					{[...state.tagFilter].map((tag) => (
 						<li key={tag}>
 							<button
 								type="button"
 								className="text-sm text-primary-300 hover:underline relative focus-visible:outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
-								onClick={() => handleTagFilterRemoved(tag)}
+								onClick={() =>
+									dispatch({ type: "tagFilterRemoved", tag })}
 							>
 								#{tag}
 							</button>
@@ -240,13 +285,15 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 			</div>
 
 			<ul className="flex flex-col gap-4">
-				{filteredTasks.map((task) => (
+				{state.filteredTasks.map((task) => (
 					<li key={task.id}>
 						<TaskCard
 							task={task}
-							onChange={handleTaskChange}
-							onRemove={handleTaskRemoved}
-							onTagClick={handleTaskTagClicked}
+							onChange={(task) =>
+								dispatch({ type: "taskChanged", task })}
+							onRemove={(taskId) =>
+								dispatch({ type: "taskRemoved", taskId })}
+							onTagClick={(tag) => dispatch({ type: "tagClicked", tag })}
 						/>
 					</li>
 				))}
