@@ -1,6 +1,6 @@
 import * as Lucide from "lucide-react"
 import { matchSorter } from "match-sorter"
-import { useState, useTransition } from "react"
+import { useEffect, useRef, useState } from "react"
 import { match, P } from "ts-pattern"
 import { clamp, ensure } from "../../lib/common.ts"
 import type { TaskDb } from "./task-db.ts"
@@ -40,19 +40,18 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 	const [filteredTasks, setFilteredTasks] = useState<Task[]>(
 		() => getFilteredTasks(db.tasks, search, tagFilter),
 	)
-	const [pending, startTransition] = useTransition()
+	const containerRef = useRef<HTMLDivElement>(null)
 
 	const moveFocus = (
-		event: React.KeyboardEvent<HTMLDivElement>,
 		options: { to: number } | { by: number } | { byClamped: number },
 	) => {
+		const container = ensure(containerRef.current)
+
 		const focusItems = Array.from(
-			event.currentTarget.querySelectorAll<HTMLElement>(
-				"[data-focus-item]",
-			),
+			container.querySelectorAll<HTMLElement>("[data-focus-item]"),
 		)
-		const currentIndex = focusItems.findIndex(
-			(element) => document.activeElement === element,
+		const currentIndex = focusItems.findIndex((element) =>
+			document.activeElement === element
 		)
 
 		const nextIndex = match(options)
@@ -74,9 +73,9 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 			scrollTo({ top: 0, behavior: "smooth" })
 		} else {
 			nextItem.scrollIntoView({
-			behavior: "smooth",
+				behavior: "smooth",
 				block: "center",
-		})
+			})
 		}
 	}
 
@@ -108,57 +107,10 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 		}
 	}
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-		match(event)
-			.with({ key: "ArrowDown", ctrlKey: true }, () => {
-				moveFocus(event, { by: 1 })
-			})
-			.with({ key: "ArrowUp", ctrlKey: true }, () => {
-				moveFocus(event, { by: -1 })
-			})
-			.with({ key: "Home", ctrlKey: true }, () => {
-				moveFocus(event, { to: 0 })
-			})
-			.with({ key: "End", ctrlKey: true }, () => {
-				moveFocus(event, { to: -1 })
-			})
-			.with({
-				key: "Enter",
-				ctrlKey: true,
-				target: P.instanceOf(HTMLElement).and(
-					P.shape({
-						dataset: { taskId: P.string },
-					}),
-				),
-			}, (event) => {
-				event.preventDefault()
-				const updated = db.withUpdatedTask(
-					event.target.dataset.taskId,
-					(it) => ({ ...it, complete: !it.complete }),
-				)
-				onUpdateTasks(updated.tasks)
-				setFilteredTasks(getFilteredTasks(updated.tasks, search, tagFilter))
-			})
-			.with({
-				key: "Delete",
-				ctrlKey: true,
-				target: P.instanceOf(HTMLElement).and(
-					P.shape({
-						dataset: { taskId: P.string },
-					}),
-				),
-			}, (event) => {
-				event.preventDefault()
-				const updated = db.withoutTask(event.target.dataset.taskId)
-				onUpdateTasks(updated.tasks)
-				setFilteredTasks(getFilteredTasks(updated.tasks, search, tagFilter))
-			})
-			.otherwise(() => {})
-	}
-
 	const handleTaskChange = (task: Task) => {
 		const updated = db.withUpdatedTask(task.id, () => task)
 		onUpdateTasks(updated.tasks)
+
 		// instead of setting all of the filtered tasks,
 		// only update the specific task that changed,
 		// to keep the whole list from shifting when changing a single task
@@ -179,20 +131,88 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 		setFilteredTasks(getFilteredTasks(db.tasks, search, newFilter))
 	}
 
-	const handleTagUnfiltered = (tag: string) => {
+	const handleTagFilterRemoved = (tag: string) => {
 		const newFilter = new Set(tagFilter)
 		newFilter.delete(tag)
 		setTagFilter(newFilter)
 		setFilteredTasks(getFilteredTasks(db.tasks, search, newFilter))
 	}
 
+	useEffect(() => {
+		const controller = new AbortController()
+
+		addEventListener("keydown", (event) => {
+			match(event)
+				.with({ key: "ArrowDown", ctrlKey: true }, () => {
+					moveFocus({ by: 1 })
+				})
+				.with({ key: "ArrowUp", ctrlKey: true }, () => {
+					moveFocus({ by: -1 })
+				})
+				.with({ key: "Home", ctrlKey: true }, () => {
+					moveFocus({ to: 0 })
+				})
+				.with({ key: "End", ctrlKey: true }, () => {
+					moveFocus({ to: -1 })
+				})
+				.with({
+					key: P.union("Enter", " "),
+					ctrlKey: true,
+					target: P.instanceOf(HTMLElement).and(
+						P.shape({
+							dataset: { taskId: P.string },
+						}),
+					),
+				}, (event) => {
+					event.preventDefault()
+					const updated = db.withUpdatedTask(
+						event.target.dataset.taskId,
+						(it) => ({ ...it, complete: !it.complete }),
+					)
+					onUpdateTasks(updated.tasks)
+
+					// instead of setting all of the filtered tasks,
+					// only update the specific task that changed,
+					// to keep the whole list from shifting when changing a single task
+					setFilteredTasks((tasks) =>
+						tasks.map((it) =>
+							it.id === event.target.dataset.taskId
+								? ({ ...it, complete: !it.complete })
+								: it
+						)
+					)
+				})
+				.with({
+					key: "Delete",
+					ctrlKey: true,
+					target: P.instanceOf(HTMLElement).and(
+						P.shape({
+							dataset: { taskId: P.string },
+						}),
+					),
+				}, (event) => {
+					event.preventDefault()
+					const updated = db.withoutTask(event.target.dataset.taskId)
+					onUpdateTasks(updated.tasks)
+					setFilteredTasks(
+						getFilteredTasks(updated.tasks, search, tagFilter),
+					)
+				})
+				.otherwise(() => {})
+		}, { signal: controller.signal })
+
+		return () => {
+			controller.abort()
+		}
+	})
+
 	return (
 		<div
 			className="px-14 max-w-[720px] mx-auto w-full isolate pb-16"
-			onKeyDown={handleKeyDown}
+			ref={containerRef}
 		>
-			<div className="sticky -mx-14 top-0 bg-primary-900 z-10 mb-2">
-				<div className="relative flex overflow-clip px-14 px-4 pt-4 pb-2">
+			<div className="sticky -mx-14 top-0 bg-primary-900 *:px-14 z-10 mb-1">
+				<div className="relative flex overflow-clip pt-4 pb-3">
 					<textarea
 						className="textarea text-lg"
 						rows={1}
@@ -202,26 +222,22 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 						onChange={handleInputChange}
 						onKeyDown={handleInputKeyDown}
 					/>
-					<Lucide.Loader2
-						data-pending={pending || undefined}
-						className="self-center absolute right-0 h-full aspect-square animate-spin data-[pending]:opacity-50 opacity-0 transition-opacity"
-					/>
+					<Lucide.Loader2 className="self-center absolute right-0 h-full aspect-square animate-spin data-[pending]:opacity-50 opacity-0 transition-opacity" />
 				</div>
+				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden mb-4">
+					{[...tagFilter].map((tag) => (
+						<li key={tag}>
+							<button
+								type="button"
+								className="text-sm text-primary-300 hover:underline relative focus-visible:outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
+								onClick={() => handleTagFilterRemoved(tag)}
+							>
+								#{tag}
+							</button>
+						</li>
+					))}
+				</ul>
 			</div>
-
-			<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden">
-				{[...tagFilter].map((tag) => (
-					<li key={tag}>
-						<button
-							type="button"
-							className="text-sm text-primary-300 hover:underline relative focus-visible:outline outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
-							onClick={() => handleTagUnfiltered(tag)}
-						>
-							#{tag}
-						</button>
-					</li>
-				))}
-			</ul>
 
 			<ul className="flex flex-col gap-4">
 				{filteredTasks.map((task) => (

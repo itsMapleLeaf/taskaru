@@ -1,11 +1,94 @@
 {
 	"tasks": [
 		{
+			"id": "c407076b-b314-4af3-84a5-43274e5f005f",
+			"text": "clear filters button",
+			"tags": [
+				"filters"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:21:54.399Z"
+		},
+		{
+			"id": "8256f880-d2bf-4357-86bb-5cae9cbfcfeb",
+			"text": "button under input to add arbitrary tag filters",
+			"tags": [
+				"filters",
+				"tags"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:20:39.810Z"
+		},
+		{
+			"id": "d9da7c18-9d36-4cdb-a290-774035d8150c",
+			"text": "trim task text on adding",
+			"tags": [
+				"input",
+				"smol",
+				"mvp"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:01:33.559Z"
+		},
+		{
+			"id": "a3584b53-d075-4f1b-bb0a-0c646d30c41b",
+			"text": "prevent adding tasks with empty text",
+			"tags": [
+				"input",
+				"smol",
+				"mvp"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:01:30.513Z"
+		},
+		{
+			"id": "a26912a0-f978-4e38-baeb-2bceea29a917",
+			"text": "when changing focus, start at nearest focusable element instead of at the start",
+			"tags": [
+				"focus",
+				"keyboard controls"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:01:16.521Z"
+		},
+		{
+			"id": "eb7c5d52-88b0-49b5-999b-1ef749dcf698",
+			"text": "task deps\n\nit'll be under and/or beside the tags, you can type @ and it'll show a dropdown of tasks which you can search",
+			"tags": [
+				"nontrivial",
+				"task deps",
+				"tasks"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T21:01:16.388Z"
+		},
+		{
+			"id": "9cea1883-48c9-4a5a-baea-e625edee9475",
+			"text": "add filtered tags to new tasks",
+			"tags": [
+				"mvp",
+				"filters",
+				"input",
+				"tags"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T20:59:26.316Z"
+		},
+		{
+			"id": "046aa347-6259-46f5-a253-a9be971f2c60",
+			"text": "potentially add a refresh button to manually re-filter all the tasks",
+			"tags": [
+				"tasks",
+				"filters"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T20:35:30.223Z"
+		},
+		{
 			"id": "f6a033eb-4a51-4edc-86f8-e2231e03debc",
 			"text": "use a triple dot \"more\" menu instead of a context menu",
 			"tags": [
-				"tasks",
-				"ui"
+				"tasks"
 			],
 			"complete": false,
 			"createdAt": "2024-10-12T20:29:20.534Z"
@@ -31,7 +114,7 @@
 		},
 		{
 			"id": "2dacf32e-7b82-4c4b-9a68-da5576e92f89",
-			"text": "deduplicate tags",
+			"text": "deduplicate tags\n\nwe should keep the task tags as sets in memory, then convert them to and from arrays during save\n\nor use superjson? can help for dates as well",
 			"tags": [
 				"tags"
 			],
@@ -45,7 +128,7 @@
 				"nontrivial",
 				"tags"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-12T08:23:51.026Z"
 		},
 		{
@@ -72,7 +155,6 @@
 			"id": "eeeea565-5e7a-41a3-b08a-40e6105f41c9",
 			"text": "remove \"save\", since we save on change anyways",
 			"tags": [
-				"ui",
 				"file menu",
 				"smol"
 			],
@@ -83,9 +165,8 @@
 			"id": "ddb583ab-517e-455a-b622-5acf87dbf83f",
 			"text": "some way to add multiple tasks at once, like an \"import\" button which opens a modal, which then adds one task per line or something",
 			"tags": [
-				"ui",
-				"tasks",
-				"nontrivial"
+				"nontrivial",
+				"tasks"
 			],
 			"complete": false,
 			"createdAt": "2024-10-12T04:56:26.273Z"
@@ -163,11 +244,12 @@
 		},
 		{
 			"id": "13168f56-ca1a-48d5-839f-9c128bc00851",
-			"text": "when adding a new task, add text with #hash #tags as task tags, remove them from the task text, show them under the input, and add them to new tasks",
+			"text": "find any words in the input with #hash #tags in them and show them as tag filters",
 			"tags": [
 				"mvp",
+				"nontrivial",
 				"tags",
-				"tasks"
+				"filters"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -244,10 +326,10 @@
 			"id": "0ced3805-4f62-44a2-b656-a9517bb680ae",
 			"text": "sort completed items after pending items",
 			"tags": [
-				"sorting",
-				"mvp"
+				"mvp",
+				"sorting"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
 		},
 		{
