@@ -87,6 +87,14 @@ export function TaskCard({
 									})
 									event.currentTarget.value = ""
 								}
+								if (
+									event.key === "Backspace" &&
+									event.currentTarget.selectionStart === 0
+								) {
+									update({
+										tags: task.tags.slice(0, -1),
+									})
+								}
 							}}
 						/>
 					</li>

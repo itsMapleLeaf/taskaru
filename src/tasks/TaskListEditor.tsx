@@ -1,18 +1,99 @@
 import * as Lucide from "lucide-react"
 import { matchSorter } from "match-sorter"
-import { useEffect, useReducer, useRef } from "react"
+import { useEffect, useMemo, useReducer, useRef } from "react"
 import { match, P } from "ts-pattern"
 import { clamp, ensure } from "../../lib/common.ts"
 import type { TaskDb } from "./task-db.ts"
 import { createTask, type Task } from "./task.ts"
 import { TaskCard } from "./TaskCard.tsx"
 
-function getFilteredTasks(
-	tasks: readonly Task[],
-	search: string,
-	tags: ReadonlySet<string>,
-) {
-	let result = matchSorter(tasks, search, {
+type State = {
+	db: TaskDb
+	search: string
+	tagFilter: ReadonlySet<string>
+	// this patches property lets us declaratively update individual tasks at a time
+	// without reordering and shifting around the list while updating them
+	patches: Record<string, Task>
+}
+
+type Action =
+	| { type: "inputChanged"; input: string }
+	| { type: "taskAdded"; task: Task }
+	| { type: "taskRemoved"; taskId: string }
+	| { type: "taskChanged"; task: Task }
+	| { type: "tagFilterAdded"; tag: string }
+	| { type: "tagFilterRemoved"; tag: string }
+
+function reducer(state: State, action: Action): State {
+	// on individual task updates, only update the patches,
+	// and those will get applied to the sorted DB tasks
+	// without shifting their order while they're being changed
+	if (action.type === "taskChanged") {
+		return {
+			...state,
+			patches: { ...state.patches, [action.task.id]: action.task },
+		}
+	}
+
+	// on every other update, apply the temporary patches to the db,
+	// so that the list will filter and reorder
+	// with the newly patched tasks
+	state = {
+		...state,
+		db: state.db.withTasks(
+			state.db.tasks.map((task) => state.patches[task.id] ?? task),
+		),
+		patches: {},
+	}
+
+	if (action.type === "inputChanged") {
+		return {
+			...state,
+			search: action.input,
+		}
+	}
+
+	if (action.type === "taskAdded") {
+		return {
+			...state,
+			search: "",
+			db: state.db.withNewTask(action.task),
+		}
+	}
+
+	if (action.type === "taskRemoved") {
+		return {
+			...state,
+			db: state.db.withoutTask(action.taskId),
+		}
+	}
+
+	if (action.type === "tagFilterAdded") {
+		return {
+			...state,
+			tagFilter: new Set([...state.tagFilter, action.tag]),
+		}
+	}
+
+	if (action.type === "tagFilterRemoved") {
+		const tagFilter = new Set(state.tagFilter)
+		tagFilter.delete(action.tag)
+		return { ...state, tagFilter }
+	}
+
+	action satisfies never
+	throw new Error(`unexpected action`, { cause: action })
+}
+
+export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
+	const [state, dispatch] = useReducer(reducer, {
+		db: initialDb,
+		search: "",
+		tagFilter: new Set<string>(),
+		patches: {},
+	})
+
+	const tasks = matchSorter(state.db.tasks, state.search, {
 		keys: ["text", "tags.*"],
 		sorter: (items) => {
 			return items
@@ -21,126 +102,27 @@ function getFilteredTasks(
 				.sort((a, b) => Number(a.item.complete) - Number(b.item.complete))
 		},
 	})
-
-	if (tags.size > 0) {
-		result = result.filter(
-			(task) => task.tags.some((tag) => tags.has(tag)),
+		.filter(
+			(task) =>
+				state.tagFilter.size === 0 ||
+				task.tags.some((tag) => state.tagFilter.has(tag)),
 		)
-	}
+		.map((task) => state.patches[task.id] ?? task)
+		.map((task) => ({ ...task, tags: task.tags.toSorted() }))
 
-	return result.map((task) => ({ ...task, tags: task.tags.toSorted() }))
-}
-
-type State = {
-	db: TaskDb
-	search: string
-	tagFilter: ReadonlySet<string>
-	filteredTasks: Task[]
-	save: boolean
-}
-
-type Action =
-	| { type: "inputChanged"; input: string }
-	| { type: "taskAdded"; task: Task }
-	| { type: "tagClicked"; tag: string }
-	| { type: "tagFilterRemoved"; tag: string }
-	| { type: "taskChanged"; task: Task }
-	| { type: "taskRemoved"; taskId: string }
-
-function reducer(state: State, action: Action): State {
-	if (action.type === "inputChanged") {
-		return {
-			...state,
-			search: action.input,
-			filteredTasks: getFilteredTasks(
-				state.db.tasks,
-				action.input,
-				state.tagFilter,
-			),
-			save: false,
-		}
-	}
-	if (action.type === "taskAdded") {
-		const db = state.db.withNewTask(action.task)
-		return {
-			...state,
-			search: "",
-			db,
-			filteredTasks: getFilteredTasks(db.tasks, "", state.tagFilter),
-			save: true,
-		}
-	}
-	if (action.type === "tagClicked") {
-		const tagFilter = new Set([...state.tagFilter, action.tag])
-		return {
-			...state,
-			tagFilter,
-			filteredTasks: getFilteredTasks(
-				state.db.tasks,
-				state.search,
-				tagFilter,
-			),
-			save: false,
-		}
-	}
-	if (action.type === "tagFilterRemoved") {
-		const tagFilter = new Set(state.tagFilter)
-		tagFilter.delete(action.tag)
-		return {
-			...state,
-			tagFilter,
-			filteredTasks: getFilteredTasks(
-				state.db.tasks,
-				state.search,
-				tagFilter,
-			),
-			save: false,
-		}
-	}
-	if (action.type === "taskChanged") {
-		const db = state.db.withUpdatedTask(action.task.id, () => action.task)
-		return {
-			...state,
-			db,
-			filteredTasks: state.filteredTasks.map((task) =>
-				task.id === action.task.id ? action.task : task
-			),
-			save: true,
-		}
-	}
-	if (action.type === "taskRemoved") {
-		const db = state.db.withoutTask(action.taskId)
-		return {
-			...state,
-			db,
-			filteredTasks: state.filteredTasks.filter((task) =>
-				task.id !== action.taskId
-			),
-			save: true,
-		}
-	}
-	action satisfies never
-	throw new Error(`unexpected action`, { cause: action })
-}
-
-export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
-	const [state, dispatch] = useReducer(reducer, {
-		search: "",
-		tagFilter: new Set<string>(),
-		filteredTasks: getFilteredTasks(initialDb.tasks, "", new Set()),
-		save: false,
-		db: initialDb,
-	})
-
-	const containerRef = useRef<HTMLDivElement>(null)
+	const patchedDb = useMemo(() => {
+		return state.db.withTasks(
+			state.db.tasks.map((task) => state.patches[task.id] ?? task),
+		)
+	}, [state.db, state.patches])
 
 	useEffect(() => {
-		if (state.save) {
-			state.db.save().catch((error) => {
-				console.error("Failed to save DB:", error)
-			})
-		}
-	}, [state.save, state.db])
+		patchedDb.save().catch((error) => {
+			console.error("Failed to save DB:", error)
+		})
+	}, [patchedDb])
+
+	const containerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		const controller = new AbortController()
@@ -285,7 +267,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 			</div>
 
 			<ul className="flex flex-col gap-4">
-				{state.filteredTasks.map((task) => (
+				{tasks.map((task) => (
 					<li key={task.id}>
 						<TaskCard
 							task={task}
@@ -293,7 +275,8 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 								dispatch({ type: "taskChanged", task })}
 							onRemove={(taskId) =>
 								dispatch({ type: "taskRemoved", taskId })}
-							onTagClick={(tag) => dispatch({ type: "tagClicked", tag })}
+							onTagClick={(tag) =>
+								dispatch({ type: "tagFilterAdded", tag })}
 						/>
 					</li>
 				))}

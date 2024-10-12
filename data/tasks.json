@@ -1,6 +1,15 @@
 {
 	"tasks": [
 		{
+			"id": "dee392f1-064c-4dc3-b904-8ba5c389cf43",
+			"text": "backspace on \"add tag\" input should delete the last tag",
+			"tags": [
+				"tags"
+			],
+			"complete": true,
+			"createdAt": "2024-10-12T23:12:28.534Z"
+		},
+		{
 			"id": "046aa347-6259-46f5-a253-a9be971f2c60",
 			"text": "potentially add a refresh button to manually re-filter all the tasks",
 			"tags": [
