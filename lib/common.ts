@@ -20,3 +20,10 @@ export function lerpInverse(t: number, a: number, b: number) {
 export function clamp(value: number, min: number, max: number) {
 	return value < min ? min : value > max ? max : value
 }
+
+export function ensure<T>(value: T | null | undefined): NonNullable<T> {
+	if (value == null) {
+		throw new Error(`value is ${value}`)
+	}
+	return value
+}

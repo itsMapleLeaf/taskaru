@@ -2,7 +2,7 @@ import * as Lucide from "lucide-react"
 import { matchSorter } from "match-sorter"
 import { useState, useTransition } from "react"
 import { match, P } from "ts-pattern"
-import { clamp } from "../../lib/common.ts"
+import { clamp, ensure } from "../../lib/common.ts"
 import type { TaskDb } from "./task-db.ts"
 import { createTask, type Task } from "./task.ts"
 import { TaskCard } from "./TaskCard.tsx"
@@ -68,12 +68,16 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 			)
 			.exhaustive()
 
-		const nextItem = focusItems.at(nextIndex)
-		nextItem?.focus()
-		nextItem?.scrollIntoView({
+		const nextItem = ensure(focusItems.at(nextIndex))
+		nextItem.focus()
+		if (nextIndex === 0) {
+			scrollTo({ top: 0, behavior: "smooth" })
+		} else {
+			nextItem.scrollIntoView({
 			behavior: "smooth",
-			block: nextIndex === 0 ? "start" : "center",
+				block: "center",
 		})
+		}
 	}
 
 	const handleInputChange = (
