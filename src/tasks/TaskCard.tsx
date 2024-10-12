@@ -1,34 +1,50 @@
 import * as Lucide from "lucide-react"
 import { ContextMenu } from "../ui/ContextMenu.tsx"
-import { useTaskStoreContext } from "./store.tsx"
 import type { Task } from "./task.ts"
 
-export function TaskCard({ task }: { task: Task }) {
-	const store = useTaskStoreContext()
+export function TaskCard({
+	task,
+	onChange,
+	onRemove,
+	onTagClick,
+}: {
+	task: Task
+	onChange: (task: Task) => void
+	onRemove: (taskId: string) => void
+	onTagClick: (tag: string) => void
+}) {
+	const update = (updates: Partial<Task>) => {
+		onChange({ ...task, ...updates })
+	}
+
 	return (
 		<ContextMenu>
 			<ContextMenu.Trigger
-				className="grid gap-2 grid-cols-[auto_1fr] data-[completed]:opacity-50 transition-opacity"
+				className="grid gap-2 data-[completed]:opacity-50 transition-opacity"
 				data-completed={task.complete || undefined}
 			>
-				<button
-					type="button"
-					className="button button-clear button-square self-center"
-					role="checkbox"
-					aria-checked={task.complete}
-					onClick={() => store.setTaskComplete(task.id, !task.complete)}
-				>
-					{task.complete ? <Lucide.CheckSquare /> : <Lucide.Square />}
-				</button>
-
-				<textarea
-					className="textarea text-lg"
-					defaultValue={task.text}
-					onChange={(event) =>
-						store.setTaskText(task.id, event.target.value)}
-					data-focus-item
-					data-task-id={task.id}
-				/>
+				<div className="relative flex">
+					<div className="absolute right-full self-center p-2">
+						<button
+							type="button"
+							className="button button-clear button-square self-center"
+							role="checkbox"
+							aria-checked={task.complete}
+							onClick={() => update({ complete: !task.complete })}
+						>
+							{task.complete
+								? <Lucide.CheckSquare />
+								: <Lucide.Square />}
+						</button>
+					</div>
+					<textarea
+						className="textarea text-lg col-span-full"
+						defaultValue={task.text}
+						onChange={(event) => update({ text: event.target.value })}
+						data-focus-item
+						data-task-id={task.id}
+					/>
+				</div>
 
 				<ul className="flex items-center gap-2 flex-wrap leading-none empty:hidden col-start-2 -col-end-1">
 					{task.tags.map((tag, index) => (
@@ -36,16 +52,21 @@ export function TaskCard({ task }: { task: Task }) {
 							<button
 								type="button"
 								className="text-sm text-primary-300 hover:underline relative rounded-sm leading-4"
-								onClick={() =>
-									store.setTagFilter(new Set([tag]))}
+								onClick={() => {
+									onTagClick(tag)
+								}}
 							>
 								#{tag}
 							</button>
 							<button
 								type="button"
 								className="button button-clear button-square h-5"
-								onClick={() =>
-									store.removeTaskTag(task.id, tag)}
+								onClick={() => {
+									const newTags = task.tags.filter((t) =>
+										t !== tag
+									)
+									update({ tags: newTags })
+								}}
 							>
 								<Lucide.X className="size-3" />
 							</button>
@@ -58,7 +79,12 @@ export function TaskCard({ task }: { task: Task }) {
 							data-focus-item
 							onKeyDown={(event) => {
 								if (event.key === "Enter") {
-									store.addTaskTag(task.id, event.currentTarget.value)
+									update({
+										tags: [
+											...task.tags,
+											event.currentTarget.value,
+										],
+									})
 									event.currentTarget.value = ""
 								}
 							}}
@@ -70,7 +96,7 @@ export function TaskCard({ task }: { task: Task }) {
 			<ContextMenu.Panel>
 				<ContextMenu.Item
 					icon={<Lucide.Trash />}
-					onClick={() => store.removeTask(task.id)}
+					onClick={() => onRemove(task.id)}
 				>
 					<span>Delete</span>
 				</ContextMenu.Item>

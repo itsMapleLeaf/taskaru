@@ -8,7 +8,6 @@
 
 ::-webkit-scrollbar-thumb {
 	background-color: var(--color-primary-700);
-	border-radius: 9999px;
 	transition-property: background-color;
 	transition-duration: var(--default-transition-duration);
 }

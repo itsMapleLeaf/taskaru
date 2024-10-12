@@ -1,6 +1,108 @@
 {
 	"tasks": [
 		{
+			"id": "f6a033eb-4a51-4edc-86f8-e2231e03debc",
+			"text": "use a triple dot \"more\" menu instead of a context menu",
+			"tags": [
+				"tasks",
+				"ui"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T20:29:20.534Z"
+		},
+		{
+			"id": "c15a7fcb-5c3e-4cfc-980e-3c9dc838740a",
+			"text": "use window scrolling",
+			"tags": [
+				"ui",
+				"mvp"
+			],
+			"complete": true,
+			"createdAt": "2024-10-12T17:38:20.040Z"
+		},
+		{
+			"id": "452dadd8-8f8a-4a30-9dad-cdd155d298b3",
+			"text": "recent files in file menu",
+			"tags": [
+				"file menu"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T08:24:47.802Z"
+		},
+		{
+			"id": "2dacf32e-7b82-4c4b-9a68-da5576e92f89",
+			"text": "deduplicate tags",
+			"tags": [
+				"tags"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T08:24:11.242Z"
+		},
+		{
+			"id": "7677317d-aa6d-4341-8f54-602ae4dd78e5",
+			"text": "globally rename a tag",
+			"tags": [
+				"nontrivial",
+				"tags"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T08:23:51.026Z"
+		},
+		{
+			"id": "72e35d9d-e218-4320-8285-fc6333fa74f0",
+			"text": "prevent a task from shifting around (or disappearing!) while it's being edited",
+			"tags": [
+				"mvp",
+				"tasks",
+				"very hard"
+			],
+			"complete": true,
+			"createdAt": "2024-10-12T08:23:19.787Z"
+		},
+		{
+			"id": "dfd3b75d-4783-47da-911e-e9f2e4d9e863",
+			"text": "button + menu option to duplicate a task",
+			"tags": [
+				"tasks"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T07:22:33.102Z"
+		},
+		{
+			"id": "eeeea565-5e7a-41a3-b08a-40e6105f41c9",
+			"text": "remove \"save\", since we save on change anyways",
+			"tags": [
+				"ui",
+				"file menu",
+				"smol"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T05:11:07.137Z"
+		},
+		{
+			"id": "ddb583ab-517e-455a-b622-5acf87dbf83f",
+			"text": "some way to add multiple tasks at once, like an \"import\" button which opens a modal, which then adds one task per line or something",
+			"tags": [
+				"ui",
+				"tasks",
+				"nontrivial"
+			],
+			"complete": false,
+			"createdAt": "2024-10-12T04:56:26.273Z"
+		},
+		{
+			"id": "40d7ffe2-42bc-4d19-af80-927c5c9769b9",
+			"text": "submit on enter\n\nmultiline tasks are extremely less common and I keep trying to submit on enter lol",
+			"tags": [
+				"ui",
+				"task input",
+				"mvp",
+				"smol"
+			],
+			"complete": true,
+			"createdAt": "2024-10-12T04:47:24.216Z"
+		},
+		{
 			"id": "31ac63c6-0852-442a-a4a1-ed6a37a5d792",
 			"text": "recent tasks list on onboarding",
 			"tags": [
@@ -61,7 +163,7 @@
 		},
 		{
 			"id": "13168f56-ca1a-48d5-839f-9c128bc00851",
-			"text": "when adding a new task, add text with #hash #tags as task tags, and remove them from the task text",
+			"text": "when adding a new task, add text with #hash #tags as task tags, remove them from the task text, show them under the input, and add them to new tasks",
 			"tags": [
 				"mvp",
 				"tags",
@@ -87,7 +189,7 @@
 				"tasks",
 				"grouping"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
 		},
 		{
@@ -113,7 +215,8 @@
 			"id": "612f41d5-702b-445a-a025-035ea8587911",
 			"text": "render created/updated date on tasks",
 			"tags": [
-				"tasks"
+				"tasks",
+				"lowpri"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -139,16 +242,17 @@
 		},
 		{
 			"id": "0ced3805-4f62-44a2-b656-a9517bb680ae",
-			"text": "sort by completed",
+			"text": "sort completed items after pending items",
 			"tags": [
-				"sorting"
+				"sorting",
+				"mvp"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
 		},
 		{
 			"id": "398a0ec5-2078-4449-9c58-f03bd060248e",
-			"text": "sort by text",
+			"text": "option to sort by text",
 			"tags": [
 				"sorting"
 			],
@@ -157,7 +261,7 @@
 		},
 		{
 			"id": "672243e1-aeb2-4101-b6d1-1f6c74d64ea3",
-			"text": "dropdown filter by status",
+			"text": "dropdown status filter",
 			"tags": [
 				"filters"
 			],
