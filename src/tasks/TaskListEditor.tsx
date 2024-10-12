@@ -170,7 +170,7 @@ export function TaskListEditor({ db, onUpdateTasks }: {
 	}
 
 	const handleTaskTagClicked = (tag: string) => {
-		const newFilter = new Set([tag])
+		const newFilter = new Set([...tagFilter, tag])
 		setTagFilter(newFilter)
 		setFilteredTasks(getFilteredTasks(db.tasks, search, newFilter))
 	}
