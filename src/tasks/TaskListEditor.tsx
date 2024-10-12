@@ -14,13 +14,10 @@ function getFilteredTasks(
 ) {
 	let result = matchSorter(tasks, search, {
 		keys: ["text", "tags.*"],
-		baseSort: (a, b) => {
-			return b.item.createdAt.localeCompare(a.item.createdAt)
-		},
 		sorter: (items) => {
 			return items
-				.sort((a, b) => Number(a.rank) - Number(b.rank))
 				.sort((a, b) => b.item.createdAt.localeCompare(a.item.createdAt))
+				.sort((a, b) => Number(b.rank) - Number(a.rank))
 				.sort((a, b) => Number(a.item.complete) - Number(b.item.complete))
 		},
 	})
