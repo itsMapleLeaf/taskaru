@@ -8,14 +8,21 @@ export function TaskCard({
 	onChange,
 	onRemove,
 	onTagClick,
+	allTags,
 }: {
 	task: Task
 	onChange: (task: Task) => void
 	onRemove: (taskId: string) => void
 	onTagClick: (tag: string) => void
+	allTags: ReadonlySet<string>
 }) {
 	const update = (updates: Partial<Task>) => {
 		onChange({ ...task, ...updates })
+	}
+
+	const handleTagRemoved = (tag: string) => {
+		const newTags = task.tags.filter((t) => t !== tag)
+		update({ tags: newTags })
 	}
 
 	return (
@@ -53,6 +60,13 @@ export function TaskCard({
 							<button
 								type="button"
 								className="text-sm text-primary-300 hover:underline relative rounded-sm leading-4"
+								onPointerDown={(event) => {
+									console.log(event)
+									if (event.button === 1) {
+										event.preventDefault()
+										handleTagRemoved(tag)
+									}
+								}}
 								onClick={() => {
 									onTagClick(tag)
 								}}
@@ -63,10 +77,7 @@ export function TaskCard({
 								type="button"
 								className="button button-clear button-square h-5"
 								onClick={() => {
-									const newTags = task.tags.filter((t) =>
-										t !== tag
-									)
-									update({ tags: newTags })
+									handleTagRemoved(tag)
 								}}
 							>
 								<Lucide.X className="size-3" />
@@ -85,6 +96,7 @@ export function TaskCard({
 									tags: task.tags.slice(0, -1),
 								})
 							}}
+							options={allTags.difference(new Set(task.tags))}
 						/>
 					</li>
 				</ul>

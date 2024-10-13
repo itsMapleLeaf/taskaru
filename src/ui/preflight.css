@@ -31,6 +31,8 @@
 
 button,
 [role="button"],
-[role="menuitem"] {
+[role="menuitem"],
+[role="option"]
+ {
 	cursor: default;
 }

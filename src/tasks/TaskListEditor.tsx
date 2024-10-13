@@ -138,11 +138,12 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
+		const container = ensure(containerRef.current)
+		const controller = new AbortController()
+
 		const moveFocus = (
 			options: { to: number } | { by: number } | { byClamped: number },
 		) => {
-			const container = ensure(containerRef.current)
-
 			const focusItems = Array.from(
 				container.querySelectorAll<HTMLElement>("[data-focus-item]"),
 			)
@@ -175,9 +176,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 			}
 		}
 
-		const controller = new AbortController()
-
-		addEventListener("keydown", (event) => {
+		container.addEventListener("keydown", (event) => {
 			const isInput = event.target instanceof HTMLInputElement ||
 				event.target instanceof HTMLTextAreaElement
 
@@ -186,6 +185,8 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 
 			const isAtEndOfInput = isInput &&
 				event.target.selectionStart === event.target.value.length
+
+			if (isInput && event.target.dataset.focusItemDisabled) return
 
 			match(event)
 				.with({ key: "ArrowUp" }, () => {
@@ -265,6 +266,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 	}
 
 	const displayedTagFilter = [...state.tagFilter].toSorted()
+	const allTags = new Set(patchedDb.tasks.flatMap((task) => task.tags))
 
 	return (
 		<div
@@ -350,8 +352,12 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 							<button
 								type="button"
 								className="block text-sm text-primary-300 hover:underline relative focus-visible:outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
-								onClick={() =>
-									dispatch({ type: "tagFilterRemoved", tag })}
+								onClick={() => {
+									dispatch({
+										type: "tagFilterRemoved",
+										tag,
+									})
+								}}
 							>
 								#{tag}
 							</button>
@@ -369,6 +375,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 								}
 							}}
 							placeholder="Filter by tag..."
+							options={allTags.difference(state.tagFilter)}
 						/>
 					</li>
 				</ul>
@@ -385,6 +392,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 								dispatch({ type: "taskRemoved", taskId })}
 							onTagClick={(tag) =>
 								dispatch({ type: "tagFilterAdded", tag })}
+							allTags={allTags}
 						/>
 					</li>
 				))}
