@@ -245,7 +245,9 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 								!event.ctrlKey
 							) {
 								event.preventDefault()
-								const newTask = createTask(event.currentTarget.value)
+								const newTask = createTask(event.currentTarget.value, [
+									...state.tagFilter,
+								])
 								dispatch({ type: "taskAdded", task: newTask })
 							}
 						}}
