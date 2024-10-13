@@ -1,2 +1,2 @@
-/// <reference types="vite/client" />
+/// <reference types="npm:vite/client" />
 import {} from "npm:@total-typescript/ts-reset"

@@ -21,8 +21,10 @@ tauri-build = { version = "2.0.1", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.0.1", features = [] }
+tauri = { version = "2.0.1", features = ["devtools"] }
 tauri-plugin-log = "2.0.0-rc"
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-persisted-scope = "2"
+chrono = "0.4.38"
+tauri-plugin-shell = "2"

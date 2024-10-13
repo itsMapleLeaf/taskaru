@@ -7,9 +7,45 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-set-title",
+    "core:window:allow-close",
+    "dialog:default",
+
     "fs:default",
-    "fs:allow-read-text-file",
-    "fs:allow-write-text-file",
-    "dialog:default"
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    },
+
+    "shell:default",
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "name": "open-appdata",
+          "cmd": "$APPDATA"
+        }
+      ]
+    }
   ]
 }

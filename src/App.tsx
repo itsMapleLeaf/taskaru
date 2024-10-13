@@ -1,26 +1,26 @@
-import * as tauriDialog from "@tauri-apps/plugin-dialog"
-import { exists } from "@tauri-apps/plugin-fs"
 import { use, useState, useTransition } from "react"
+import { loadAppState, updateAppState } from "./app-state.ts"
 import { TaskDb } from "./tasks/task-db.ts"
 import { TaskListEditor } from "./tasks/TaskListEditor.tsx"
 
-const lastFilePath = localStorage.getItem("lastFilePath")
+const lastTaskDbPromise = (async () => {
+	const { lastFile } = await loadAppState()
+	if (!lastFile) return
 
-const lastTaskDbPromise = lastFilePath
-	? TaskDb.fromFile(lastFilePath).catch((error) => {
+	return await TaskDb.fromFile(lastFile).catch((error) => {
 		console.warn("failed to load recent task db:", error)
 		return null
 	})
-	: Promise.resolve(null)
+})()
 
 export function App() {
-	const [db, setDb] = useState<TaskDb | null>(
+	const [db, setDb] = useState<TaskDb | null | undefined>(
 		use(lastTaskDbPromise),
 	)
 
 	const handleDbSelected = (db: TaskDb): void => {
 		setDb(db)
-		localStorage.setItem("lastFilePath", db.file)
+		updateAppState({ lastFile: db.file })
 	}
 
 	return db
@@ -42,16 +42,10 @@ function Onboarding({
 				disabled={pending}
 				onClick={() => {
 					startTransition(async () => {
-						const file = await tauriDialog.save({
-							defaultPath: "tasks.json",
-							filters: [{ name: "JSON", extensions: ["json"] }],
-						})
-
-						if (!file) return
-
-						const db = new TaskDb([], file)
-						await db.save()
-						onDbSelected(db)
+						const db = await TaskDb.saveWithFilePicker(new TaskDb([], ""))
+						if (db) {
+							onDbSelected(db)
+						}
 					})
 				}}
 			>
@@ -64,13 +58,10 @@ function Onboarding({
 				disabled={pending}
 				onClick={() => {
 					startTransition(async () => {
-						const file = await tauriDialog.open({
-							filters: [{ name: "JSON", extensions: ["json"] }],
-						})
-						if (!file) return
-						if (!await exists(file)) return
-
-						onDbSelected(await TaskDb.fromFile(file))
+						const db = await TaskDb.openWithFilePicker()
+						if (db) {
+							onDbSelected(db)
+						}
 					})
 				}}
 			>

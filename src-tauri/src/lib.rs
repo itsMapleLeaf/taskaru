@@ -1,8 +1,7 @@
-use std::{fs::File, io::Write, path::PathBuf};
-
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::{AppHandle, Manager};
+use std::{fs::File, io::Write, path::PathBuf, time::SystemTime};
+use tauri::{plugin::TauriPlugin, AppHandle, Manager, Runtime};
 use tauri_plugin_fs::FsExt;
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -14,22 +13,36 @@ struct SavedScope {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // .plugin(tauri_plugin_persisted_scope::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
-            }
+            app.handle().plugin(create_logger())?;
             init_fs_scope_persistence(app.handle())?;
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn create_logger<R: Runtime>() -> TauriPlugin<R> {
+    let timestamp = {
+        let now = SystemTime::now();
+        let datetime = chrono::DateTime::<chrono::Utc>::from(now);
+        datetime.format("%Y-%m-%d_%H-%M-%S").to_string()
+    };
+
+    tauri_plugin_log::Builder::new()
+        .level(log::LevelFilter::Debug)
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::Stdout,
+        ))
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::LogDir {
+                file_name: Some(format!("taskaru.{}.log", timestamp)),
+            },
+        ))
+        .build()
 }
 
 fn init_fs_scope_persistence(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {

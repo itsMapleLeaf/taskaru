@@ -1,9 +1,13 @@
+import * as path from "@tauri-apps/api/path"
+import { getCurrentWindow } from "@tauri-apps/api/window"
+import * as shell from "@tauri-apps/plugin-shell"
 import * as Lucide from "lucide-react"
 import { matchSorter } from "match-sorter"
 import { useEffect, useMemo, useReducer, useRef } from "react"
 import { match, P } from "ts-pattern"
 import { clamp, ensure } from "../../lib/common.ts"
-import type { TaskDb } from "./task-db.ts"
+import { Menu } from "../ui/Menu.tsx"
+import { TaskDb } from "./task-db.ts"
 import { createTask, type Task } from "./task.ts"
 import { TaskCard } from "./TaskCard.tsx"
 
@@ -23,6 +27,7 @@ type Action =
 	| { type: "taskChanged"; task: Task }
 	| { type: "tagFilterAdded"; tag: string }
 	| { type: "tagFilterRemoved"; tag: string }
+	| { type: "dbLoaded"; db: TaskDb }
 
 function reducer(state: State, action: Action): State {
 	// on individual task updates, only update the patches,
@@ -83,6 +88,16 @@ function reducer(state: State, action: Action): State {
 		return { ...state, tagFilter }
 	}
 
+	if (action.type === "dbLoaded") {
+		return {
+			...state,
+			db: action.db,
+			search: "",
+			tagFilter: new Set<string>(),
+			patches: {},
+		}
+	}
+
 	action satisfies never
 	throw new Error(`unexpected action`, { cause: action })
 }
@@ -104,11 +119,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 				.sort((a, b) => Number(a.item.complete) - Number(b.item.complete))
 		},
 	})
-		.filter(
-			(task) =>
-				state.tagFilter.size === 0 ||
-				task.tags.some((tag) => state.tagFilter.has(tag)),
-		)
+		.filter((task) => state.tagFilter.isSubsetOf(new Set(task.tags)))
 		.map((task) => state.patches[task.id] ?? task)
 
 	const patchedDb = useMemo(() => {
@@ -160,22 +171,6 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 						task: { ...taskToUpdate, complete: !taskToUpdate.complete },
 					})
 				})
-				.with({
-					key: "Delete",
-					ctrlKey: true,
-					target: P.instanceOf(HTMLElement).and(
-						P.shape({
-							dataset: { taskId: P.string },
-						}),
-					),
-				}, (event) => {
-					event.preventDefault()
-					moveFocus({ byClamped: 2 })
-					dispatch({
-						type: "taskRemoved",
-						taskId: event.target.dataset.taskId,
-					})
-				})
 				.otherwise(() => {})
 		}, { signal: controller.signal })
 
@@ -221,40 +216,109 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 		}
 	}
 
+	const handleOpenFile = async () => {
+		const newDb = await TaskDb.openWithFilePicker()
+		if (newDb) {
+			dispatch({ type: "dbLoaded", db: newDb })
+		}
+	}
+
+	const handleSaveAs = async () => {
+		const newDb = await TaskDb.saveWithFilePicker(patchedDb)
+		if (newDb) {
+			dispatch({ type: "dbLoaded", db: newDb })
+		}
+	}
+
 	return (
 		<div
-			className="px-14 max-w-[720px] mx-auto w-full isolate pb-16"
+			className="
+			isolate pb-8
+			[--content-width:720px]
+			[--pl:theme(spacing.2)]
+			[--pr:theme(spacing.14)]
+		"
 			ref={containerRef}
 		>
-			<div className="sticky -mx-14 top-0 bg-primary-900 *:px-14 z-10 mb-1">
-				<div className="relative flex overflow-clip pt-4 pb-3">
-					<textarea
-						className="textarea text-lg"
-						rows={1}
-						placeholder="What's next?"
-						data-focus-item
-						value={state.search}
-						onChange={(event) =>
-							dispatch({
-								type: "inputChanged",
-								input: event.target.value,
-							})}
-						onKeyDown={(event) => {
-							if (
-								event.key === "Enter" && !event.shiftKey &&
-								!event.ctrlKey
-							) {
-								event.preventDefault()
-								const newTask = createTask(event.currentTarget.value, [
-									...state.tagFilter,
-								])
-								dispatch({ type: "taskAdded", task: newTask })
-							}
-						}}
-					/>
-					<Lucide.Loader2 className="self-center absolute right-0 h-full aspect-square animate-spin data-[pending]:opacity-50 opacity-0 transition-opacity" />
+			<header className="sticky top-0 bg-primary-900 z-10 pt-4 pb-2 flex flex-col gap-4">
+				<div className="relative pl-[var(--pl)] pr-[var(--pr)] max-w-[var(--content-width)] mx-auto w-full">
+					<div className="flex relative">
+						<div className="left-full px-2 absolute self-center">
+							<Menu placement="bottom-end">
+								<Menu.Button className="button button-clear button-square">
+									<Lucide.Menu />
+								</Menu.Button>
+								<Menu.Panel>
+									<Menu.Item
+										icon={<Lucide.FolderOpen />}
+										onClick={handleOpenFile}
+									>
+										Open
+									</Menu.Item>
+									<Menu.Item
+										icon={<Lucide.Save />}
+										onClick={handleSaveAs}
+									>
+										Save as...
+									</Menu.Item>
+									<Menu.Separator />
+									<Menu.Item
+										icon={<Lucide.Code2 />}
+										onClick={async () => {
+											try {
+												const dataDir = await path.appDataDir()
+												await shell.open(dataDir)
+											} catch (error) {
+												console.error(
+													"Failed to open data folder:",
+													error,
+												)
+											}
+										}}
+									>
+										Open data folder
+									</Menu.Item>
+									<Menu.Separator />
+									<Menu.Item
+										icon={<Lucide.DoorOpen />}
+										onClick={() => getCurrentWindow().close()}
+									>
+										Quit
+									</Menu.Item>
+								</Menu.Panel>
+							</Menu>
+						</div>
+						<textarea
+							className="textarea text-lg"
+							rows={1}
+							placeholder="What's next?"
+							data-focus-item
+							value={state.search}
+							onChange={(event) =>
+								dispatch({
+									type: "inputChanged",
+									input: event.target.value,
+								})}
+							onKeyDown={(event) => {
+								if (
+									event.key === "Enter" && !event.shiftKey &&
+									!event.ctrlKey
+								) {
+									event.preventDefault()
+									const newTask = createTask(
+										event.currentTarget.value,
+										[
+											...state.tagFilter,
+										],
+									)
+									dispatch({ type: "taskAdded", task: newTask })
+								}
+							}}
+						/>
+					</div>
 				</div>
-				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden mb-4">
+
+				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden pl-[var(--pl)] pr-[var(--pr)] max-w-[var(--content-width)]  mx-auto w-full">
 					{[...state.tagFilter].toSorted().map((tag) => (
 						<li key={tag}>
 							<button
@@ -268,9 +332,9 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 						</li>
 					))}
 				</ul>
-			</div>
+			</header>
 
-			<ul className="flex flex-col gap-4">
+			<ul className="flex flex-col gap-4 pl-[var(--pl)] pr-[var(--pr)] max-w-[var(--content-width)] mx-auto w-full py-2">
 				{tasks.map((task) => (
 					<li key={task.id}>
 						<TaskCard

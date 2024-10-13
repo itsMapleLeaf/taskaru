@@ -19,5 +19,5 @@
 		"exclude": [".vite", "dist"]
 	},
 	"nodeModulesDir": "auto",
-	"exclude": ["src-tauri", ".vite", "dist"]
+	"exclude": ["dist", ".vite", "src-tauri/gen", "src-tauri/target"]
 }

@@ -3,5 +3,5 @@
 }
 
 @utility menu-item {
-	@apply flex items-center rounded gap-2.5 px-3 py-2 hover:bg-primary-700 transition;
+	@apply flex items-center rounded gap-4 px-4 pr-6 py-2 hover:bg-primary-700 transition;
 }

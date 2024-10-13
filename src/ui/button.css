@@ -52,6 +52,8 @@
 
 @utility button-clear {
 	--button-bg: transparent;
+	--button-bg-hover: var(--color-primary-800);
+	--button-bg-active: var(--color-primary-700);
 }
 
 @utility button-square {

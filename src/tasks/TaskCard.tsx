@@ -24,7 +24,14 @@ export function TaskCard({
 				data-completed={task.complete || undefined}
 			>
 				<div className="relative flex">
-					<div className="absolute right-full self-center p-2">
+					<textarea
+						className="textarea text-lg col-span-full"
+						defaultValue={task.text}
+						onChange={(event) => update({ text: event.target.value })}
+						data-focus-item
+						data-task-id={task.id}
+					/>
+					<div className="absolute left-full self-center p-2">
 						<button
 							type="button"
 							className="button button-clear button-square self-center"
@@ -37,13 +44,6 @@ export function TaskCard({
 								: <Lucide.Square />}
 						</button>
 					</div>
-					<textarea
-						className="textarea text-lg col-span-full"
-						defaultValue={task.text}
-						onChange={(event) => update({ text: event.target.value })}
-						data-focus-item
-						data-task-id={task.id}
-					/>
 				</div>
 
 				<ul className="flex items-center gap-2 flex-wrap leading-none empty:hidden col-start-2 -col-end-1">
