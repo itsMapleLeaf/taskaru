@@ -1,5 +1,6 @@
 import * as Lucide from "lucide-react"
 import { ContextMenu } from "../ui/ContextMenu.tsx"
+import { TagInput } from "./TagInput.tsx"
 import type { Task } from "./task.ts"
 
 export function TaskCard({
@@ -73,28 +74,16 @@ export function TaskCard({
 						</li>
 					))}
 					<li className="flex-1">
-						<input
-							className="text-sm text-primary-300 relative rounded-sm border-0 leading-4 w-full min-w-[100px]"
-							placeholder="Add tag..."
-							data-focus-item
-							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									update({
-										tags: [
-											...task.tags,
-											event.currentTarget.value,
-										],
-									})
-									event.currentTarget.value = ""
-								}
-								if (
-									event.key === "Backspace" &&
-									event.currentTarget.selectionStart === 0
-								) {
-									update({
-										tags: task.tags.slice(0, -1),
-									})
-								}
+						<TagInput
+							onAdd={(newTag) => {
+								update({
+									tags: [...task.tags, newTag],
+								})
+							}}
+							onBackspace={() => {
+								update({
+									tags: task.tags.slice(0, -1),
+								})
 							}}
 						/>
 					</li>

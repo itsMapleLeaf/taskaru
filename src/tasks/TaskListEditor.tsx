@@ -7,6 +7,7 @@ import { useEffect, useMemo, useReducer, useRef } from "react"
 import { match, P } from "ts-pattern"
 import { clamp, ensure } from "../../lib/common.ts"
 import { Menu } from "../ui/Menu.tsx"
+import { TagInput } from "./TagInput.tsx"
 import { TaskDb } from "./task-db.ts"
 import { createTask, type Task } from "./task.ts"
 import { TaskCard } from "./TaskCard.tsx"
@@ -262,6 +263,9 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 			)
 		}
 	}
+
+	const displayedTagFilter = [...state.tagFilter].toSorted()
+
 	return (
 		<div
 			className="
@@ -341,7 +345,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 				</div>
 
 				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden pl-[var(--pl)] pr-[var(--pr)] max-w-[var(--content-width)]  mx-auto w-full">
-					{[...state.tagFilter].toSorted().map((tag) => (
+					{displayedTagFilter.map((tag) => (
 						<li key={tag}>
 							<button
 								type="button"
@@ -353,6 +357,20 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 							</button>
 						</li>
 					))}
+					<li className="flex-1">
+						<TagInput
+							onAdd={(newTag) => {
+								dispatch({ type: "tagFilterAdded", tag: newTag })
+							}}
+							onBackspace={() => {
+								const lastTag = displayedTagFilter.pop()
+								if (lastTag) {
+									dispatch({ type: "tagFilterRemoved", tag: lastTag })
+								}
+							}}
+							placeholder="Filter by tag..."
+						/>
+					</li>
 				</ul>
 			</header>
 
