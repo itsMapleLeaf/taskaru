@@ -1,6 +1,51 @@
 {
 	"tasks": [
 		{
+			"id": "418d71ea-6415-46ba-8ab2-3610fd6f6436",
+			"text": "prevent adding empty tasks",
+			"tags": [
+				"bug",
+				"smol",
+				"tasks"
+			],
+			"complete": false,
+			"createdAt": "2024-10-13T00:17:43.864Z"
+		},
+		{
+			"id": "66ced918-e3dd-4828-99e5-fa8d8d220c20",
+			"text": "prevent adding empty tags",
+			"tags": [
+				"bug",
+				"smol",
+				"tags"
+			],
+			"complete": false,
+			"createdAt": "2024-10-13T00:14:50.548Z"
+		},
+		{
+			"id": "b2a6bb64-1b9e-4860-9872-ff7f7e87b69a",
+			"text": "add back file menu\n\n- instead of using the native menu, make it a styled navbar\n- options: open, open recent, close",
+			"tags": [
+				"file menu"
+			],
+			"complete": false,
+			"createdAt": "2024-10-13T00:13:43.197Z"
+		},
+		{
+			"id": "1fd57c78-44d6-4eee-924d-738e0242ab97",
+			"text": "add  currently  filtered  tags  to  new  tasks",
+			"tags": [
+				"filters",
+				"input",
+				"mvp",
+				"smol",
+				"tags",
+				"tasks"
+			],
+			"complete": true,
+			"createdAt": "2024-10-13T00:07:01.959Z"
+		},
+		{
 			"id": "dee392f1-064c-4dc3-b904-8ba5c389cf43",
 			"text": "backspace on \"add tag\" input should delete the last tag",
 			"tags": [
@@ -13,8 +58,8 @@
 			"id": "046aa347-6259-46f5-a253-a9be971f2c60",
 			"text": "potentially add a refresh button to manually re-filter all the tasks",
 			"tags": [
-				"tasks",
-				"filters"
+				"filters",
+				"tasks"
 			],
 			"complete": false,
 			"createdAt": "2024-10-12T20:35:30.223Z"
@@ -32,8 +77,8 @@
 			"id": "c15a7fcb-5c3e-4cfc-980e-3c9dc838740a",
 			"text": "use window scrolling",
 			"tags": [
-				"ui",
-				"mvp"
+				"mvp",
+				"ui"
 			],
 			"complete": true,
 			"createdAt": "2024-10-12T17:38:20.040Z"
@@ -44,7 +89,7 @@
 			"tags": [
 				"file menu"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-12T08:24:47.802Z"
 		},
 		{
@@ -93,7 +138,7 @@
 				"file menu",
 				"smol"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-12T05:11:07.137Z"
 		},
 		{
@@ -110,10 +155,10 @@
 			"id": "40d7ffe2-42bc-4d19-af80-927c5c9769b9",
 			"text": "submit on enter\n\nmultiline tasks are extremely less common and I keep trying to submit on enter lol",
 			"tags": [
-				"ui",
-				"task input",
 				"mvp",
-				"smol"
+				"smol",
+				"task input",
+				"ui"
 			],
 			"complete": true,
 			"createdAt": "2024-10-12T04:47:24.216Z"
@@ -151,8 +196,8 @@
 			"text": "sort tags on tasks alphabetically",
 			"tags": [
 				"mvp",
-				"tasks",
-				"tags"
+				"tags",
+				"tasks"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -161,8 +206,8 @@
 			"id": "d5ce8fe7-4db1-4d9f-b853-1e7e47d34f9e",
 			"text": "add X button by tags to delete them",
 			"tags": [
-				"tags",
-				"mvp"
+				"mvp",
+				"tags"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -171,22 +216,22 @@
 			"id": "21704339-246a-485c-85d5-c793c5873ffb",
 			"text": "press delete when focusing a tag to delete the tag",
 			"tags": [
-				"tags",
-				"keyboard controls"
+				"keyboard controls",
+				"tags"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
 		},
 		{
 			"id": "13168f56-ca1a-48d5-839f-9c128bc00851",
-			"text": "find any words in the input with #hash #tags in them and show them as tag filters",
+			"text": "(cancelled) find any words in the input with #hash #tags in them and show them as tag filters",
 			"tags": [
+				"filters",
 				"mvp",
 				"nontrivial",
-				"tags",
-				"filters"
+				"tags"
 			],
-			"complete": false,
+			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
 		},
 		{
@@ -203,8 +248,8 @@
 			"id": "1e462c7a-2bdc-4c08-acac-0d6ad8db3e8e",
 			"text": "color tasks under tag groups",
 			"tags": [
-				"tasks",
-				"grouping"
+				"grouping",
+				"tasks"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -222,8 +267,8 @@
 			"id": "419bb500-2d0c-4b8d-bd32-92212eb888e0",
 			"text": "autocomplete tags",
 			"tags": [
-				"tags",
-				"nontrivial"
+				"nontrivial",
+				"tags"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -232,8 +277,8 @@
 			"id": "612f41d5-702b-445a-a025-035ea8587911",
 			"text": "render created/updated date on tasks",
 			"tags": [
-				"tasks",
-				"lowpri"
+				"lowpri",
+				"tasks"
 			],
 			"complete": false,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -242,8 +287,8 @@
 			"id": "b8026cc2-158a-4713-a945-7aea8750e1a6",
 			"text": "sort by created date by default",
 			"tags": [
-				"sorting",
-				"mvp"
+				"mvp",
+				"sorting"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -310,8 +355,8 @@
 			"text": "adding tags to tasks",
 			"tags": [
 				"mvp",
-				"tasks",
-				"tags"
+				"tags",
+				"tasks"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
@@ -330,8 +375,8 @@
 			"id": "0b1c45bf-0792-4717-900a-443f32eebf1a",
 			"text": "filter by input text",
 			"tags": [
-				"mvp",
-				"filters"
+				"filters",
+				"mvp"
 			],
 			"complete": true,
 			"createdAt": "2024-10-07T06:09:33.142Z"
