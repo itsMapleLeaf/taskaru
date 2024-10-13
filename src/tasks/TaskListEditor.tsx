@@ -253,11 +253,11 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 					<Lucide.Loader2 className="self-center absolute right-0 h-full aspect-square animate-spin data-[pending]:opacity-50 opacity-0 transition-opacity" />
 				</div>
 				<ul className="flex items-center gap-3 flex-wrap leading-none empty:hidden mb-4">
-					{[...state.tagFilter].map((tag) => (
+					{[...state.tagFilter].toSorted().map((tag) => (
 						<li key={tag}>
 							<button
 								type="button"
-								className="text-sm text-primary-300 hover:underline relative focus-visible:outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
+								className="block text-sm text-primary-300 hover:underline relative focus-visible:outline-2 outline-offset-2 outline-primary-600 rounded leading-4"
 								onClick={() =>
 									dispatch({ type: "tagFilterRemoved", tag })}
 							>
