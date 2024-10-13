@@ -137,25 +137,83 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
+		const moveFocus = (
+			options: { to: number } | { by: number } | { byClamped: number },
+		) => {
+			const container = ensure(containerRef.current)
+
+			const focusItems = Array.from(
+				container.querySelectorAll<HTMLElement>("[data-focus-item]"),
+			)
+			const currentIndex = focusItems.findIndex((element) =>
+				document.activeElement === element
+			)
+
+			const nextIndex = match(options)
+				.with({ to: P.number }, ({ to }) => to)
+				.with(
+					{ by: P.number },
+					({ by }) => mod(currentIndex + by, focusItems.length),
+				)
+				.with(
+					{ byClamped: P.number },
+					({ byClamped }) =>
+						clamp(currentIndex + byClamped, 0, focusItems.length - 1),
+				)
+				.exhaustive()
+
+			const nextItem = ensure(focusItems.at(nextIndex))
+			nextItem.focus()
+			if (nextIndex === 0) {
+				scrollTo({ top: 0, behavior: "smooth" })
+			} else {
+				nextItem.scrollIntoView({
+					behavior: "smooth",
+					block: "center",
+				})
+			}
+		}
+
 		const controller = new AbortController()
 
 		addEventListener("keydown", (event) => {
+			const isInput = event.target instanceof HTMLInputElement ||
+				event.target instanceof HTMLTextAreaElement
+
+			const isAtStartOfInput = isInput &&
+				event.target.selectionStart === 0
+
+			const isAtEndOfInput = isInput &&
+				event.target.selectionStart === event.target.value.length
+
 			match(event)
-				.with({ key: "ArrowDown", ctrlKey: true }, () => {
-					moveFocus({ by: 1 })
+				.with({ key: "ArrowUp" }, () => {
+					if (!isInput || isAtStartOfInput) {
+						event.preventDefault()
+						moveFocus({ by: -1 })
+					}
 				})
-				.with({ key: "ArrowUp", ctrlKey: true }, () => {
-					moveFocus({ by: -1 })
+				.with({ key: "ArrowDown" }, () => {
+					if (!isInput || isAtEndOfInput) {
+						event.preventDefault()
+						moveFocus({ by: 1 })
+					}
 				})
-				.with({ key: "Home", ctrlKey: true }, () => {
-					moveFocus({ to: 0 })
+				.with({ key: "Home" }, () => {
+					if (!isInput || isAtStartOfInput) {
+						event.preventDefault()
+						moveFocus({ to: 0 })
+					}
 				})
-				.with({ key: "End", ctrlKey: true }, () => {
-					moveFocus({ to: -1 })
+				.with({ key: "End" }, () => {
+					if (!isInput || isAtEndOfInput) {
+						event.preventDefault()
+						moveFocus({ to: -1 })
+					}
 				})
 				.with({
-					key: P.union("Enter", " "),
-					ctrlKey: true,
+					key: "Enter",
+					shiftKey: false,
 					target: P.instanceOf(HTMLElement).and(
 						P.shape({
 							dataset: { taskId: P.string },
@@ -163,12 +221,12 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 					),
 				}, (event) => {
 					event.preventDefault()
-					const taskToUpdate = state.db.tasks.find((t) =>
+					const task = patchedDb.tasks.find((t) =>
 						t.id === event.target.dataset.taskId
 					)!
 					dispatch({
 						type: "taskChanged",
-						task: { ...taskToUpdate, complete: !taskToUpdate.complete },
+						task: { ...task, complete: !task.complete },
 					})
 				})
 				.otherwise(() => {})
@@ -178,43 +236,6 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 			controller.abort()
 		}
 	})
-
-	const moveFocus = (
-		options: { to: number } | { by: number } | { byClamped: number },
-	) => {
-		const container = ensure(containerRef.current)
-
-		const focusItems = Array.from(
-			container.querySelectorAll<HTMLElement>("[data-focus-item]"),
-		)
-		const currentIndex = focusItems.findIndex((element) =>
-			document.activeElement === element
-		)
-
-		const nextIndex = match(options)
-			.with({ to: P.number }, ({ to }) => to)
-			.with(
-				{ by: P.number },
-				({ by }) => mod(currentIndex + by, focusItems.length),
-			)
-			.with(
-				{ byClamped: P.number },
-				({ byClamped }) =>
-					clamp(currentIndex + byClamped, 0, focusItems.length - 1),
-			)
-			.exhaustive()
-
-		const nextItem = ensure(focusItems.at(nextIndex))
-		nextItem.focus()
-		if (nextIndex === 0) {
-			scrollTo({ top: 0, behavior: "smooth" })
-		} else {
-			nextItem.scrollIntoView({
-				behavior: "smooth",
-				block: "center",
-			})
-		}
-	}
 
 	const handleOpenFile = async () => {
 		const newDb = await TaskDb.openWithFilePicker()
@@ -230,6 +251,17 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 		}
 	}
 
+	const handleOpenDataFolder = async () => {
+		try {
+			const dataDir = await path.appDataDir()
+			await shell.open(dataDir)
+		} catch (error) {
+			console.error(
+				"Failed to open data folder:",
+				error,
+			)
+		}
+	}
 	return (
 		<div
 			className="
@@ -264,17 +296,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 									<Menu.Separator />
 									<Menu.Item
 										icon={<Lucide.Code2 />}
-										onClick={async () => {
-											try {
-												const dataDir = await path.appDataDir()
-												await shell.open(dataDir)
-											} catch (error) {
-												console.error(
-													"Failed to open data folder:",
-													error,
-												)
-											}
-										}}
+										onClick={handleOpenDataFolder}
 									>
 										Open data folder
 									</Menu.Item>
