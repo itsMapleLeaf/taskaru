@@ -41,7 +41,9 @@ function reducer(state: State, action: Action): State {
 	state = {
 		...state,
 		db: state.db.withTasks(
-			state.db.tasks.map((task) => state.patches[task.id] ?? task),
+			state.db.tasks
+				.map((task) => state.patches[task.id] ?? task)
+				.map((task) => ({ ...task, tags: task.tags.toSorted() })),
 		),
 		patches: {},
 	}
@@ -108,7 +110,6 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 				task.tags.some((tag) => state.tagFilter.has(tag)),
 		)
 		.map((task) => state.patches[task.id] ?? task)
-		.map((task) => ({ ...task, tags: task.tags.toSorted() }))
 
 	const patchedDb = useMemo(() => {
 		return state.db.withTasks(
