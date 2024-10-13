@@ -169,6 +169,7 @@ export function TaskListEditor({ initialDb }: { initialDb: TaskDb }) {
 					),
 				}, (event) => {
 					event.preventDefault()
+					moveFocus({ byClamped: 2 })
 					dispatch({
 						type: "taskRemoved",
 						taskId: event.target.dataset.taskId,
